@@ -7,14 +7,11 @@ require "httparty"
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 
-def levels
-  levels = JSON.parse(HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
-  levels
-end
-
 get "/info" do
   {
-    levels: levels,
+    levels: [
+      JSON.parse(File.read("./info.json")),
+    ],
     skins: [],
     backgrounds: [],
     effects: [],

@@ -1,0 +1,142 @@
+{
+  "name": "Welcome!",
+  "version": 1,
+  "rating": 0,
+  "engine": {
+    "name": "message",
+    "version": 4,
+    "title": "ようこそ！",
+    "subtitle": "（メッセージ用）",
+    "author": "名無し｡",
+    "skin": {
+      "name": "pjsekai.classic",
+      "version": 2,
+      "title": "Project Sekai",
+      "subtitle": "Project Sekai: Colorful Stage!",
+      "author": "Sonolus",
+      "thumbnail": {
+        "type": "SkinThumbnail",
+        "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
+        "url": "/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+      },
+      "data": {
+        "type": "SkinData",
+        "hash": "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
+        "url": "/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af"
+      },
+      "texture": {
+        "type": "SkinTexture",
+        "hash": "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
+        "url": "/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c"
+      }
+    },
+    "background": {
+      "name": "pjsekai.live",
+      "version": 2,
+      "title": "Project Sekai",
+      "subtitle": "Project Sekai: Colorful Stage!",
+      "author": "Sonolus",
+      "thumbnail": {
+        "type": "BackgroundThumbnail",
+        "hash": "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
+        "url": "/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90"
+      },
+      "data": {
+        "type": "BackgroundData",
+        "hash": "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
+        "url": "/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2"
+      },
+      "image": {
+        "type": "BackgroundImage",
+        "hash": "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
+        "url": "/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db"
+      },
+      "configuration": {
+        "type": "BackgroundConfiguration",
+        "hash": "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
+        "url": "/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7"
+      }
+    },
+    "effect": {
+      "name": "pjsekai.classic",
+      "version": 2,
+      "title": "Project Sekai",
+      "subtitle": "Project Sekai: Colorful Stage!",
+      "author": "Sonolus",
+      "thumbnail": {
+        "type": "EffectThumbnail",
+        "hash": "e5f439916eac9bbd316276e20aed999993653560",
+        "url": "/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+      },
+      "data": {
+        "type": "EffectData",
+        "hash": "173a9113716f0edc13f0f3e4a0458ef84525a0aa",
+        "url": "/repository/EffectData/173a9113716f0edc13f0f3e4a0458ef84525a0aa"
+      }
+    },
+    "particle": {
+      "name": "pjsekai.classic",
+      "version": 1,
+      "title": "Project Sekai",
+      "subtitle": "Project Sekai: Colorful Stage!",
+      "author": "Sonolus",
+      "thumbnail": {
+        "type": "ParticleThumbnail",
+        "hash": "e5f439916eac9bbd316276e20aed999993653560",
+        "url": "/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+      },
+      "data": {
+        "type": "ParticleData",
+        "hash": "f84c5dead70ad62a00217589a73a07e7421818a8",
+        "url": "/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8"
+      },
+      "texture": {
+        "type": "ParticleTexture",
+        "hash": "4850a8f335204108c439def535bcf693c7f8d050",
+        "url": "/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050"
+      }
+    },
+    "thumbnail": {
+      "type": "EngineThumbnail",
+      "hash": "e5f439916eac9bbd316276e20aed999993653560",
+      "url": "/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+    },
+    "data": {
+      "type": "EngineData",
+      "hash": "86773c786f00b8b6cd2f6f99be11f62281385133",
+      "url": "/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133"
+    },
+    "configuration": {
+      "type": "EngineConfiguration",
+      "hash": "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+      "url": "/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee"
+    }
+  },
+  "useSkin": {
+    "useDefault": true
+  },
+  "useBackground": {
+    "useDefault": true
+  },
+  "useEffect": {
+    "useDefault": true
+  },
+  "useParticle": {
+    "useDefault": true
+  },
+  "title": "背景付きサーバーへようこそ！",
+  "artists": "背景で快適な生活を。",
+  "author": "名無し｡",
+  "cover": {
+    "type": "LevelCover",
+    "url": "https://cdn.discordapp.com/attachments/756477702030098513/897734492414951424/trans.png"
+  },
+  "bgm": {
+    "type": "LevelBgm",
+    "url": "/repo/welcome.mp3"
+  },
+  "data": {
+    "type": "LevelData",
+    "url": "/repo/data.gz"
+  }
+}
