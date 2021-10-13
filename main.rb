@@ -109,7 +109,7 @@ get "/levels/:name" do |name|
     subtitle: "#{level[:artists]} / #{level[:author]}",
     thumbnail: {
       type: :BackgroundThumbnail,
-      url: "https://servers.purplepalette.net" + level[:cover][:url],
+      url: level[:cover][:url],
     },
     data: {
       type: :BackgroundData,
