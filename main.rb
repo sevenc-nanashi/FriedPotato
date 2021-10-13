@@ -90,7 +90,7 @@ get "/generate/:name" do |name|
 end
 
 get "/levels/list" do
-  levels.to_json.gsub('"/', '"https://servers.purplepalette.net/')
+  HTTParty.get("https://servers.purplepalette.net/levels/list?page=#{params[:page]}&keywords=#{params[:keywords]}").body.gsub('"/', '"https://servers.purplepalette.net/')
 end
 
 get "/levels/:name" do |name|
