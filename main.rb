@@ -90,7 +90,7 @@ get "/generate/:name" do |name|
 end
 
 get "/levels/list" do
-  HTTParty.get("https://servers.purplepalette.net/levels/list?page=#{params[:page]}&keywords=#{params[:keywords]}").body.gsub('"/', '"https://servers.purplepalette.net/')
+  HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body.gsub('"/', '"https://servers.purplepalette.net/')
 end
 
 get "/levels/:name" do |name|
