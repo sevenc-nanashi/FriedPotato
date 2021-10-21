@@ -19,9 +19,7 @@ set :public_folder, File.dirname(__FILE__) + "/public"
 
 get "/info" do
   {
-    levels: [
-      JSON.parse(File.read("./info.json")),
-    ],
+    levels: JSON.parse(File.read("./info.json")),
     skins: [],
     backgrounds: [],
     effects: [],
