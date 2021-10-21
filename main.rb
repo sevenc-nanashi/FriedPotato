@@ -122,5 +122,7 @@ get "/levels/:name" do |name|
     },
 
   }
+  level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
+  level_hash[:item][:engine][:effect][:data].delete(:hash)
   level_hash.to_json
 end
