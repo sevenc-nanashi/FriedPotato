@@ -148,7 +148,7 @@ get "/effects/pjsekai.fixed" do
     "item": {
       "author": "Sonolus",
       "data": {
-        "hash": "173a9113716f0edc13f0f3e4a0458ef84525a0aa",
+        "hash": Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb")),
         "type": "EffectData",
         "url": "/repo/seconfig.gz",
       },
