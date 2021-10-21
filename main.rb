@@ -135,10 +135,35 @@ get "/levels/:name" do |name|
     },
 
   }
+  level_hash[:item][:engine][:effect][:name] = "pjsekai.fixed"
   level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
   if File.exists?("dist/#{level[:name]}.png")
     level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
   end
   level_hash.to_json
+end
+
+get "/effects/pjsekai.fixed" do
+  {
+    "description": "",
+    "item": {
+      "author": "Sonolus",
+      "data": {
+        "hash": "173a9113716f0edc13f0f3e4a0458ef84525a0aa",
+        "type": "EffectData",
+        "url": "/repo/seconfig.gz",
+      },
+      "name": "pjsekai.fixed",
+      "subtitle": "Project Sekai: Colorful Stage!",
+      "thumbnail": {
+        "hash": "e5f439916eac9bbd316276e20aed999993653560",
+        "type": "EffectThumbnail",
+        "url": "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+      },
+      "title": "Project Sekai",
+      "version": 2,
+    },
+    "recommended": [],
+  }.to_json
 end
