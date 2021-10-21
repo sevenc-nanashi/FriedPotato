@@ -3,6 +3,16 @@ require "uri"
 require "sinatra"
 require "sinatra/reloader"
 require "httparty"
+require "digest"
+require "zlib"
+
+# Make seconfig.json
+
+config = JSON.parse File.read("./raw_data/seconfig.json"), symbolize_names: true
+config[:clips][-1][:clip][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/connect.mp3", mode: "rb"))
+Zlib::GzipWriter.open("./public/repo/seconfig.gz") do |gz|
+  gz.write config.to_json
+end
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
@@ -106,10 +116,12 @@ get "/levels/:name" do |name|
     subtitle: "#{level[:artists]} / #{level[:author]}",
     thumbnail: {
       type: :BackgroundThumbnail,
+      hash: level[:cover][:hash],
       url: level[:cover][:url],
     },
     data: {
       type: :BackgroundData,
+      hash: Digest::SHA1.hexdigest(File.read("./public/repo/data.gz", mode: "rb")),
       url: "/repo/data.gz",
     },
     image: {
@@ -118,11 +130,15 @@ get "/levels/:name" do |name|
     },
     configuration: {
       type: :BackgroundConfiguration,
-      url: "/repo/config",
+      hash: Digest::SHA1.hexdigest(File.read("./public/repo/config.gz", mode: "rb")),
+      url: "/repo/config.gz",
     },
 
   }
   level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
-  level_hash[:item][:engine][:effect][:data].delete(:hash)
+  level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
+  if File.exists?("dist/#{level[:name]}.png")
+    level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
+  end
   level_hash.to_json
 end
