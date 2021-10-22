@@ -269,7 +269,7 @@ get "/convert/:name" do |name|
   }
   slide_positions = {}
   last_entities = []
-  s[:entities][2..].each_with_index do |e, i|
+  s[:entities][2..].each.with_index(2) do |e, i|
     val = e[:data][:values]
     case e[:archetype]
     when 2
@@ -302,7 +302,7 @@ get "/convert/:name" do |name|
       }
     when 3
       width = (val[2] + 1) / 2.0
-      slide_positions[i + 2] = val
+      slide_positions[i] = val
       base[:entities] << {
         archetype: 5,
         data: {
@@ -316,7 +316,7 @@ get "/convert/:name" do |name|
         },
       }
     when 5
-      slide_positions[i + 2] = val
+      slide_positions[i] = val
       width = (val[3] + 1) / 2.0
       base[:entities] << {
         archetype: 6,
@@ -330,7 +330,7 @@ get "/convert/:name" do |name|
         },
       }
     when 6, 7
-      slide_positions[i + 2] = val
+      slide_positions[i] = val
       width = (val[3] + 1) / 2.0
       before = [
         val[1],
@@ -360,7 +360,7 @@ get "/convert/:name" do |name|
               position,
               before,
               -1,
-              first_index,
+              first_index + 1,
             ].flatten,
           },
         }
