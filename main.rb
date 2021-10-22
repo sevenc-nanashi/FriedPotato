@@ -380,3 +380,18 @@ get "/convert/:name" do |name|
   end
   File.read("./dist/conv/#{name}.gz", mode: "rb")
 end
+
+ip = `ipconfig`.force_encoding("ascii-8bit").split("\n").find { |l| l.include?("v4") and l.include?("192") }.split(" ").last
+puts "
+\e[91m+---------------------------------------------+\e[m
+\e[91m|            FriedPotatoへようこそ！          |\e[m
+\e[91m+---------------------------------------------+\e[m
+
+Sonolusを開き、サーバーのURLに以下を入力して下さい：
+  \e[97mhttp://#{ip}:4567\e[m
+
+\e[97mCtrl+C\e[m を押すと終了します。
+
+Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
+".strip
+puts
