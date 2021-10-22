@@ -109,7 +109,7 @@ get "/levels/:name" do |name|
     level_hash[:item][:engine] = {
       name: "pjsekai",
       version: 4,
-      title: "プロセカ",
+      title: "プロセカ（コンバーター）",
       subtitle: "プロジェクトセカイ カラフルステージ!",
       author: "Burrito",
       skin: {
