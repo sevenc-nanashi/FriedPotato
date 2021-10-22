@@ -71,4 +71,4 @@ rt.draw_shader(0, 0, dot_tile, mask)
 
 final_rt.draw(orig.width - base.width, (orig.height - base.height) / 2, rt)
 
-final_rt.to_image.save("dist/#{name}.png")
+final_rt.to_image.save("dist/bg/#{name}.png")

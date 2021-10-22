@@ -1,1 +1,2 @@
-dist/*.png
+dist/**/*.png
+dist/**/*.gz
