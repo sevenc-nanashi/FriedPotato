@@ -122,7 +122,7 @@ end
 
 get "/levels/:name" do |name|
   if name.start_with?("l_")
-    level_raw = HTTParty.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1]}").body.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
+    level_raw = HTTParty.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1].gsub(" ", "%20")}").body.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
   else
     level_raw = HTTParty.get("https://servers.purplepalette.net/levels/#{name}").body.gsub('"/', '"https://servers.purplepalette.net/')
   end
