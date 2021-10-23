@@ -9,6 +9,8 @@ require "zlib"
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 
+$level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
+
 get "/info" do
   {
     levels: JSON.parse(File.read("./info.json")),
@@ -90,7 +92,24 @@ get "/generate/:name" do |name|
 end
 
 get "/levels/list" do
-  HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body.gsub('"/', '"https://servers.purplepalette.net/')
+  ppdata = JSON.parse(
+    HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
+  )
+  if ppdata[:items].length == 0
+    levels = JSON.parse(
+      HTTParty.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
+        .gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
+    )[:items].map do |data|
+      data[:data][:url] = "/local/#{data[:name]}/data.gz"
+      data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+      data[:name] = "l_" + data[:name]
+
+      data
+    end
+    ppdata[:items] = levels
+  end
+  ppdata[:pageCount] += 1
+  ppdata.to_json
 end
 
 get "/levels/Welcome!" do
@@ -102,7 +121,12 @@ get "/levels/Welcome!" do
 end
 
 get "/levels/:name" do |name|
-  level_raw = HTTParty.get("https://servers.purplepalette.net/levels/#{name}").body.gsub('"/', '"https://servers.purplepalette.net/')
+  if name.start_with?("l_")
+    level_raw = HTTParty.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1]}").body.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
+  else
+    level_raw = HTTParty.get("https://servers.purplepalette.net/levels/#{name}").body.gsub('"/', '"https://servers.purplepalette.net/')
+  end
+
   level_hash = JSON.parse(level_raw, symbolize_names: true)
   level = level_hash[:item]
   if level_hash[:item][:engine][:name] == "wbp-pjsekai"
@@ -176,6 +200,19 @@ get "/levels/:name" do |name|
     level_hash[:item][:data][:url] = "/convert/#{level_hash[:item][:name]}"
     level_hash[:item][:data].delete(:hash)
     level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./convert/#{level_hash[:item][:name]}.gz")) if File.exists?("./convert/#{level_hash[:item][:name]}.gz")
+  elsif level_hash[:item][:engine][:name] == "psekai"
+    level_hash[:item][:data][:url] = "/convert/l_#{level_hash[:item][:name]}"
+    level_hash[:item][:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+    level_hash[:item][:name] = "l_" + level_hash[:item][:name]
+
+    level_hash[:item][:engine] = JSON.parse(
+      File.read("./convert-engine.json")
+        .gsub("!name!", level_hash[:item][:name])
+        .gsub("!artists!", level_hash[:item][:artists])
+        .gsub("!author!", level_hash[:item][:author])
+        .gsub("!title!", level_hash[:item][:title]),
+      symbolize_names: true,
+    )
   end
 
   level_hash[:item][:engine][:background] = {
@@ -237,8 +274,12 @@ get "/effects/pjsekai.fixed" do
 end
 
 get "/convert/:name" do |name|
-  # next File.read("./dist/conv/#{name}.gz", mode: "rb") if File.exists?("./dist/conv/#{name}.gz")
-  raw = HTTParty.get("https://servers.purplepalette.net/repository/#{name}/data.gz").body
+  next File.read("./dist/conv/#{name}.gz", mode: "rb") if File.exists?("./dist/conv/#{name}.gz")
+  if name.start_with?("l_")
+    raw = HTTParty.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
+  else
+    raw = HTTParty.get("https://servers.purplepalette.net/repository/#{name}/data.gz").body
+  end
   gzreader = Zlib::GzipReader.new(StringIO.new(raw))
   json = gzreader.read
   gzreader.close

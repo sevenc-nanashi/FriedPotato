@@ -7,7 +7,11 @@ core_mask = Shader::Core.new(File.read("bg_gen/mask.hlsl"), { mask: :texture, al
 core_sub = Shader::Core.new(File.read("bg_gen/sub.hlsl"), { mask: :texture, alpha: :float })
 
 jacket = Image.load_from_file_in_memory(
-  HTTParty.get("https://servers.purplepalette.net/repository/#{name}/cover.png").body
+  HTTParty.get(
+    name.start_with?("l_") ?
+      "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg" :
+      "https://servers.purplepalette.net/repository/#{name}/cover.png"
+  ).body
 )
 mask_img = Image.load("bg_gen/mask-white.png")
 mask_img_sub = base

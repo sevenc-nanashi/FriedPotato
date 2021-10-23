@@ -1,2 +1,6 @@
 dist/**/*.png
 dist/**/*.gz
+levels/*
+!levels/.gitkeep
+level_datas/*
+!level_datas/.gitkeep
