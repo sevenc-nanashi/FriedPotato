@@ -1,2 +1,2 @@
 @echo off
-bundle exec ruby main.rb
+call bundle exec ruby main.rb
