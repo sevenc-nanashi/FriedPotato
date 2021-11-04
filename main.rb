@@ -244,7 +244,7 @@ get "/levels/:name" do |name|
   level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
   if File.exists?("dist/#{level[:name]}.png")
-    level_hash[:item][:engine][:background][:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
+    level_hash[:item][:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
   end
   level_hash.to_json
 end
