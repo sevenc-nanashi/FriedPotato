@@ -22,9 +22,19 @@ get "/info" do
   }.to_json
 end
 
+get "/tests/:test_id/info" do |test_id|
+  {
+    levels: JSON.parse(File.read("./info_test.json")),
+    skins: [],
+    backgrounds: [],
+    effects: [],
+    particles: [],
+    engines: [],
+  }.to_json
+end
 get "/backgrounds/list" do
   levels = JSON.parse(HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
-  {
+  res = {
     pageCount: levels[:pageCount],
     items: levels[:items].map do |level|
       {
@@ -50,7 +60,8 @@ get "/backgrounds/list" do
         },
       }
     end,
-  }.to_json
+  }
+  res.to_json
 end
 
 get "/backgrounds/:name" do |name|
@@ -83,7 +94,7 @@ get "/backgrounds/:name" do |name|
   }.to_json
 end
 
-get "/generate/:name" do |name|
+get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
   unless File.exists?("dist/bg/#{name}.png")
     $current = name
     eval File.read("./bg_gen/main.rb")
@@ -95,20 +106,45 @@ get "/levels/list" do
   ppdata = JSON.parse(
     HTTParty.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
-  if ppdata[:items].length == 0
-    levels = JSON.parse(
-      HTTParty.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
-        .gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
-    )[:items].map do |data|
-      data[:data][:url] = "/local/#{data[:name]}/data.gz"
-      data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
-      data[:name] = "l_" + data[:name]
+  if params[:keywords] == ""
+    if ppdata[:items].length == 0
+      levels = JSON.parse(
+        HTTParty.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
+          .gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
+      )[:items].map do |data|
+        data[:data][:url] = "/local/#{data[:name]}/data.gz"
+        data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+        data[:name] = "l_" + data[:name]
 
-      data
+        data
+      end
+      ppdata[:items] = levels
     end
-    ppdata[:items] = levels
+    ppdata[:pageCount] += 1
   end
-  ppdata[:pageCount] += 1
+  ppdata.to_json
+end
+
+get "/tests/:test_id/levels/list" do |test_id|
+  ppdata = JSON.parse(
+    HTTParty.get("https://servers.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
+  )
+  if params[:keywords] == ""
+    if ppdata[:items].length == 0
+      levels = JSON.parse(
+        HTTParty.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
+          .gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
+      )[:items].map do |data|
+        data[:data][:url] = "/local/#{data[:name]}/data.gz"
+        data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+        data[:name] = "l_" + data[:name]
+
+        data
+      end
+      ppdata[:items] = levels
+    end
+    ppdata[:pageCount] += 1
+  end
   ppdata.to_json
 end
 
@@ -120,7 +156,7 @@ get "/levels/Welcome!" do
   }.to_json
 end
 
-get "/levels/:name" do |name|
+get %r{(?:/tests/[^/]+)?/levels/(.+)} do |name|
   if name.start_with?("l_")
     level_raw = HTTParty.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1].gsub(" ", "%20")}").body.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
   else
@@ -214,7 +250,10 @@ get "/levels/:name" do |name|
       symbolize_names: true,
     )
   end
-
+  img_name = level[:name]
+  if level_hash[:description].include?("#extra")
+    img_name.insert(0, "e_")
+  end
   level_hash[:item][:engine][:background] = {
     name: level[:name],
     version: 2,
@@ -232,7 +271,7 @@ get "/levels/:name" do |name|
     },
     image: {
       type: :BackgroundImage,
-      url: "/generate/#{level[:name]}",
+      url: "/generate/#{img_name}",
     },
     configuration: {
       type: :BackgroundConfiguration,
@@ -243,7 +282,8 @@ get "/levels/:name" do |name|
   level_hash[:item][:engine][:effect][:name] = "pjsekai.fixed"
   level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
-  if File.exists?("dist/#{level[:name]}.png")
+
+  if File.exists?("dist/#{img_name}.png")
     level_hash[:item][:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
   end
   level_hash.to_json

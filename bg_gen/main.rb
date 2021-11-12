@@ -2,15 +2,19 @@ require "dxruby"
 require "httparty"
 
 base = Image.load("bg_gen/background-base.png")
-
+base_extra = Image.load("bg_gen/background-base-extra.png")
 core_mask = Shader::Core.new(File.read("bg_gen/mask.hlsl"), { mask: :texture, alpha: :float })
 core_sub = Shader::Core.new(File.read("bg_gen/sub.hlsl"), { mask: :texture, alpha: :float })
-
+url = if name.start_with?("l_")
+    "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg"
+  elsif name.start_with?("e_")
+    "https://servers.purplepalette.net/repository/#{name[2..]}/cover.png"
+  else
+    "https://servers.purplepalette.net/repository/#{name}/cover.png"
+  end
 jacket = Image.load_from_file_in_memory(
   HTTParty.get(
-    name.start_with?("l_") ?
-      "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg" :
-      "https://servers.purplepalette.net/repository/#{name}/cover.png"
+    url
   ).body
 )
 mask_img = Image.load("bg_gen/mask-white.png")
@@ -45,7 +49,11 @@ final_rt = RenderTarget.new(orig.width, orig.height)
 # 795 1255/193
 # 804 1245/628
 
-rt.draw(0, 0, base)
+if name.start_with?("e_")
+  rt.draw(0, 0, base_extra)
+else
+  rt.draw(0, 0, base)
+end
 
 center_rt.draw_morph(798, 193, 1252, 193, 1246, 635, 801, 635, jacket)
 
