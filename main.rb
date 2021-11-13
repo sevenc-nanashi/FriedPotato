@@ -129,22 +129,6 @@ get "/tests/:test_id/levels/list" do |test_id|
   ppdata = JSON.parse(
     HTTParty.get("https://servers.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
-  if params[:keywords] == ""
-    if ppdata[:items].length == 0
-      levels = JSON.parse(
-        HTTParty.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
-          .gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
-      )[:items].map do |data|
-        data[:data][:url] = "/local/#{data[:name]}/data.gz"
-        data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
-        data[:name] = "l_" + data[:name]
-
-        data
-      end
-      ppdata[:items] = levels
-    end
-    ppdata[:pageCount] += 1
-  end
   ppdata.to_json
 end
 
@@ -250,8 +234,8 @@ get %r{(?:/tests/[^/]+)?/levels/(.+)} do |name|
       symbolize_names: true,
     )
   end
-  img_name = level[:name]
-  if level_hash[:description].include?("#extra")
+  img_name = level[:name].dup
+  if level_hash[:description]&.include?("#extra")
     img_name.insert(0, "e_")
   end
   level_hash[:item][:engine][:background] = {
