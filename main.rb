@@ -14,7 +14,18 @@ $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 get "/info" do
   {
     levels: JSON.parse(File.read("./info.json")),
-    skins: [],
+    skins: [
+      {
+        name: "info_bg",
+        title: "統計：背景画像数",
+        subtitle: Dir.glob("./dist/bg/*.png").size.to_s + "枚",
+      },
+      {
+        name: "info_conv",
+        title: "統計：変換された譜面数",
+        subtitle: Dir.glob("./dist/conv/*.gz").size.to_s + "個",
+      },
+    ],
     backgrounds: [],
     effects: [],
     particles: [],
@@ -149,6 +160,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
 
   level_hash = JSON.parse(level_raw, symbolize_names: true)
   level = level_hash[:item]
+  extra = true if level_hash[:description].include?("#extra")
   if level_hash[:item][:engine][:name] == "wbp-pjsekai"
     level_hash[:item][:engine] = {
       name: "pjsekai",
@@ -235,9 +247,6 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
     )
   end
   img_name = level[:name].dup
-  if level_hash[:description]&.include?("#extra")
-    img_name += ".extra"
-  end
   if extra
     img_name += ".extra"
     level[:title] += " (Extra)"
