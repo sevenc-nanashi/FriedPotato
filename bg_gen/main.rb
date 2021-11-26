@@ -1,5 +1,5 @@
 require "dxruby"
-require "httparty"
+require "http"
 
 base = Image.load("bg_gen/background-base.png")
 base_extra = Image.load("bg_gen/background-base-extra.png")
@@ -7,15 +7,15 @@ core_mask = Shader::Core.new(File.read("bg_gen/mask.hlsl"), { mask: :texture, al
 core_sub = Shader::Core.new(File.read("bg_gen/sub.hlsl"), { mask: :texture, alpha: :float })
 url = if name.start_with?("l_")
     "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg"
-  elsif name.start_with?("e_")
-    "https://servers.purplepalette.net/repository/#{name[2..]}/cover.png"
+  elsif name.end_with?(".extra")
+    "https://servers.purplepalette.net/repository/#{name[..-7]}/cover.png"
   else
     "https://servers.purplepalette.net/repository/#{name}/cover.png"
   end
 jacket = Image.load_from_file_in_memory(
-  HTTParty.get(
+  HTTP.get(
     url
-  ).body
+  ).body.to_s
 )
 mask_img = Image.load("bg_gen/mask-white.png")
 mask_img_sub = base
@@ -49,7 +49,7 @@ final_rt = RenderTarget.new(orig.width, orig.height)
 # 795 1255/193
 # 804 1245/628
 
-if name.start_with?("e_")
+if name.end_with?(".extra")
   rt.draw(0, 0, base_extra)
 else
   rt.draw(0, 0, base)

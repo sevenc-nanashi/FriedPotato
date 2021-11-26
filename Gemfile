@@ -12,6 +12,6 @@ gem "sinatra-reloader", "~> 1.0"
 
 gem "webrick", "~> 1.7"
 
-gem "httparty", "~> 0.20.0"
+gem "http", "~> 5.0.4"
 
 gem "dxruby", "~> 1.4"

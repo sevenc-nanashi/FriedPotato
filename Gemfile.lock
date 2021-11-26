@@ -1,20 +1,34 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.8.0)
+      public_suffix (>= 2.0.2, < 5.0)
+    domain_name (0.5.20190701)
+      unf (>= 0.0.5, < 1.0.0)
     dxruby (1.4.7)
-    httparty (0.20.0)
-      mime-types (~> 3.0)
-      multi_xml (>= 0.5.2)
-    mime-types (3.3.1)
-      mime-types-data (~> 3.2015)
-    mime-types-data (3.2021.0901)
+    ffi (1.15.4-x86-mingw32)
+    ffi-compiler (1.0.1)
+      ffi (>= 1.0.0)
+      rake
+    http (5.0.4)
+      addressable (~> 2.8)
+      http-cookie (~> 1.0)
+      http-form_data (~> 2.2)
+      llhttp-ffi (~> 0.4.0)
+    http-cookie (1.0.4)
+      domain_name (~> 0.5)
+    http-form_data (2.3.0)
+    llhttp-ffi (0.4.0)
+      ffi-compiler (~> 1.0)
+      rake (~> 13.0)
     multi_json (1.15.0)
-    multi_xml (0.6.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
+    public_suffix (4.0.6)
     rack (2.2.3)
     rack-protection (2.1.0)
       rack
+    rake (13.0.6)
     ruby2_keywords (0.0.5)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -30,6 +44,9 @@ GEM
     sinatra-reloader (1.0)
       sinatra-contrib
     tilt (2.0.10)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.8-x86-mingw32)
     webrick (1.7.0)
 
 PLATFORMS
@@ -37,7 +54,7 @@ PLATFORMS
 
 DEPENDENCIES
   dxruby (~> 1.4)
-  httparty (~> 0.20.0)
+  http (~> 5.0.4)
   sinatra (~> 2.1)
   sinatra-reloader (~> 1.0)
   webrick (~> 1.7)
