@@ -5,18 +5,21 @@ base = Image.load("bg_gen/background-base.png")
 base_extra = Image.load("bg_gen/background-base-extra.png")
 core_mask = Shader::Core.new(File.read("bg_gen/mask.hlsl"), { mask: :texture, alpha: :float })
 core_sub = Shader::Core.new(File.read("bg_gen/sub.hlsl"), { mask: :texture, alpha: :float })
-url = if name.start_with?("l_")
-    "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg"
-  elsif name.end_with?(".extra")
-    "https://servers.purplepalette.net/repository/#{name[..-7]}/cover.png"
-  else
-    "https://servers.purplepalette.net/repository/#{name}/cover.png"
-  end
-jacket = Image.load_from_file_in_memory(
-  HTTP.get(
-    url
-  ).body.to_s
-)
+
+if File.exist?("overrides/#{name.delete_suffix(".extra")}/thumbnail.png")
+  jacket = Image.load("overrides/#{name.delete_suffix(".extra")}/thumbnail.png")
+else
+  url = if name.start_with?("l_")
+      "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg"
+    else
+      "https://servers.purplepalette.net/repository/#{name.delete_suffix(".extra")}/cover.png"
+    end
+  jacket = Image.load_from_file_in_memory(
+    HTTP.get(
+      url
+    ).body.to_s
+  )
+end
 mask_img = Image.load("bg_gen/mask-white.png")
 mask_img_sub = base
 dot_tile = Image.load("bg_gen/dot-tile.png")

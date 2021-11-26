@@ -151,7 +151,7 @@ get "/levels/Welcome!" do
   }.to_json
 end
 
-get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
+get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
   if name.start_with?("l_")
     level_raw = HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
   else
@@ -160,7 +160,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
 
   level_hash = JSON.parse(level_raw, symbolize_names: true)
   level = level_hash[:item]
-  extra = true if level_hash[:description].include?("#extra")
+  extra = true if level_hash[:description].include?("#extra") || suffix == "extra"
   if level_hash[:item][:engine][:name] == "wbp-pjsekai"
     level_hash[:item][:engine] = {
       name: "pjsekai",
@@ -252,6 +252,17 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
+  if Dir.exist?("./overrides/#{name}")
+    if File.exist?("./overrides/#{name}/thumbnail.png")
+      level_hash[:item][:cover][:url] = "/overrides/#{name}/thumbnail.png"
+      level_hash[:item][:cover][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/thumbnail.png"))
+    end
+    if File.exist?("./overrides/#{name}/bgm.mp3")
+      level_hash[:item][:bgm][:url] = "/overrides/#{name}/bgm.mp3"
+      level_hash[:item][:bgm][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/bgm.mp3"))
+    end
+  end
+
   level_hash[:item][:engine][:background] = {
     name: level[:name],
     version: 2,
@@ -280,9 +291,12 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
   level_hash[:item][:engine][:effect][:name] = "pjsekai.fixed"
   level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
+  if suffix == "delete-cache"
+    File.delete("dist/bg/#{img_name}.png")
+  end
 
-  if File.exists?("dist/#{img_name}.png")
-    level_hash[:item][:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/#{level[:name]}.png", mode: "rb"))
+  if File.exists?("dist/bg/#{img_name}.png")
+    level_hash[:item][:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/bg/#{level[:name]}.png", mode: "rb"))
   end
   level_hash[:recommended] = [
     {
@@ -307,6 +321,29 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(\.extra)?} do |name, extra|
       engine: {},
     },
   ]
+  if File.exists?("dist/bg/#{level[:name]}.png")
+    level_hash[:recommended] << {
+      name: level[:name] + ".delete-cache",
+      version: 2,
+      title: "背景キャッシュを削除",
+      subtitle: "-",
+      cover: {
+        type: :LevelCover,
+        hash: Digest::SHA1.hexdigest(File.read("./public/repo/delete.png", mode: "rb")),
+        url: "/repo/delete.png",
+      },
+      bgm: {
+        type: :LevelBgm,
+        hash: Digest::SHA1.hexdigest(File.read("./public/repo/connect.mp3", mode: "rb")),
+        url: "/repo/connect.mp3",
+      },
+      data: {
+        type: :LevelData,
+        url: "/repo/data.gz",
+      },
+      engine: {},
+    }
+  end
   level_hash.to_json
 end
 
@@ -481,6 +518,10 @@ get %r{(?:/tests/.+)?/convert/(.+)} do |name|
     gz.write(base.to_json)
   end
   File.read("./dist/conv/#{name}.gz", mode: "rb")
+end
+
+get %r{(?:/tests/.+)?/overrides/(.+)} do |path|
+  File.read("./overrides/#{path}", mode: "rb")
 end
 
 get %r{/tests/([^/]+)/repo/(.+)} do |name, path|
