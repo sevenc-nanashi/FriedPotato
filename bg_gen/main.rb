@@ -10,7 +10,7 @@ if File.exist?("overrides/#{name.delete_suffix(".extra")}/thumbnail.png")
   jacket = Image.load("overrides/#{name.delete_suffix(".extra")}/thumbnail.png")
 else
   url = if name.start_with?("l_")
-      "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/jacket.jpg"
+      "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..].delete_suffix(".extra")}/jacket.jpg"
     else
       "https://servers.purplepalette.net/repository/#{name.delete_suffix(".extra")}/cover.png"
     end
