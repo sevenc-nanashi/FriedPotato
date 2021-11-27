@@ -262,6 +262,14 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       level_hash[:item][:bgm][:url] = "/overrides/#{name}/bgm.mp3"
       level_hash[:item][:bgm][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/bgm.mp3"))
     end
+    if File.exist?("./overrides/#{name}/data.json")
+      json_hash = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/data.json"))
+      Zlib::GzipWriter.open("./dist/data-overrides/#{json_hash}.gz") do |gz|
+        gz.write(File.read("./overrides/#{name}/data.json"))
+      end
+      level_hash[:item][:data][:url] = "/data-overrides/#{json_hash}.gz"
+      level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
+    end
   end
 
   level_hash[:item][:engine][:background] = {
@@ -527,6 +535,10 @@ end
 
 get %r{/tests/([^/]+)/repo/(.+)} do |name, path|
   redirect "/repo/#{path}"
+end
+
+get %r{/tests/([^/]+)/data-overrides/(.+)} do |name, path|
+  File.read("./dist/data-overrides/#{path}", mode: "rb")
 end
 
 ip = `ipconfig`.force_encoding("ascii-8bit").split("\n").find { |l| l.include?("v4") and l.include?("192") }.split(" ").last
