@@ -160,6 +160,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
 
   level_hash = JSON.parse(level_raw, symbolize_names: true)
   level = level_hash[:item]
+  level_hash[:description] ||= ""
   extra = true if level_hash[:description].include?("#extra") || suffix == "extra"
   if level_hash[:item][:engine][:name] == "wbp-pjsekai"
     level_hash[:item][:engine] = {
