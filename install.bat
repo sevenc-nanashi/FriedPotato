@@ -2,3 +2,4 @@
 bundle install
 
 pause
+pause
