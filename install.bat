@@ -1,5 +1,4 @@
 @echo off
-bundle install
+call bundle install
 
-pause
 pause
