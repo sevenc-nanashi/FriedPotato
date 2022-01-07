@@ -246,6 +246,13 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
         .gsub("!title!", level_hash[:item][:title]),
       symbolize_names: true,
     )
+  else
+    level_hash[:item][:data][:url] = "/modify/#{level_hash[:item][:name]}-#{level_hash[:item][:data][:hash]}"
+    if File.exists?("dist/modify/#{level_hash[:item][:data][:hash]}.gz")
+      level_hash[:item][:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/modify/#{level_hash[:item][:data][:hash]}.gz", mode: "rb"))
+    else
+      level_hash[:item][:data].delete(:hash)
+    end
   end
   img_name = level[:name].dup
   if extra
@@ -271,6 +278,26 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
     end
   end
+  if Dir.exist?("../sonolus-pjsekai-engine")
+    level_hash[:item][:engine][:data][:url] = "/engine"
+    level_hash[:item][:engine][:data][:hash] = Digest::SHA256.hexdigest(
+      File.read('..\sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+    )
+  end
+  level_hash[:item][:engine][:skin][:data][:url] = "/skin/data"
+  skin_data_hash = Digest::SHA1.hexdigest(File.read("./skin/data.json"))
+  if File.exist?("./dist/skin/#{skin_data_hash}.gz")
+    level_hash[:item][:engine][:skin][:data][:hash] = Digest::SHA256.hexdigest(
+      File.read("./dist/skin/#{skin_data_hash}.gz")
+    )
+  else
+    level_hash[:item][:engine][:skin][:data].delete(:hash)
+  end
+
+  level_hash[:item][:engine][:skin][:texture][:url] = "/skin/texture"
+  level_hash[:item][:engine][:skin][:texture][:hash] = Digest::SHA256.hexdigest(
+    File.read("./skin/texture.png", mode: "rb")
+  )
 
   level_hash[:item][:engine][:background] = {
     name: level[:name],
@@ -533,12 +560,66 @@ get %r{(?:/tests/.+)?/overrides/(.+)} do |path|
   File.read("./overrides/#{path}", mode: "rb")
 end
 
-get %r{/tests/([^/]+)/repo/(.+)} do |name, path|
+get %r{(?:/tests/([^/]+))?/repo/(.+)} do |name, path|
   redirect "/repo/#{path}"
 end
 
-get %r{/tests/([^/]+)/data-overrides/(.+)} do |name, path|
+get %r{(?:/tests/([^/]+))?/data-overrides/(.+)} do |name, path|
   File.read("./dist/data-overrides/#{path}", mode: "rb")
+end
+
+get %r{(?:/tests/([^/]+))?/skin/texture} do |name|
+  File.read("./skin/texture.png", mode: "rb")
+end
+
+get %r{(?:/tests/([^/]+))?/skin/data} do |name|
+  hash = Digest::SHA1.hexdigest(File.read("./skin/data.json", mode: "rb"))
+  unless File.exist?("./dist/skin/#{hash}.gz")
+    Zlib::GzipWriter.open("./dist/skin/#{hash}.gz") do |gz|
+      gz.write(File.read("./skin/data.json", mode: "rb"))
+    end
+  end
+  File.read("./dist/skin/#{hash}.gz", mode: "rb")
+end
+
+get %r{(?:/tests/([^/]+))?/engine} do |name|
+  File.read('../sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+end
+
+get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
+  next File.read("./dist/modify/#{hash}.gz", mode: "rb") if File.exists?("./dist/modify/#{hash}.gz")
+  raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
+  gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
+  level_data = JSON.parse(gzreader.read, symbolize_names: true)
+  entities = level_data[:entities]
+  will_delete = []
+  entities.filter { |e| e[:archetype] == 9 }.each do |e|
+    next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
+    entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
+      index = entities.find_index(e2)
+      end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
+      if end_note[:archetype] == 7
+        e2[:archetype] = 18
+      else
+        e2[:archetype] = 19
+        e2[:data][:values][3] = end_note[:data][:values][3]
+      end
+      will_delete << end_note
+    end
+
+    will_delete << e
+  end
+  wd_index = will_delete.filter_map { |e| entities.find_index(e) }
+  will_delete.each do |e|
+    entities.delete(e)
+  end
+  entities.filter { |e| [7, 9].include?(e[:archetype]) }.each do |e|
+    e[:data][:values][-1] -= wd_index.filter { |i| i < e[:data][:values][-1] }.length
+  end
+  Zlib::GzipWriter.wrap(File.open("./dist/modify/#{hash}.gz", "wb")) do |gz|
+    gz.write(level_data.to_json)
+  end
+  File.read("./dist/modify/#{hash}.gz", mode: "rb")
 end
 
 ip = `ipconfig`.force_encoding("ascii-8bit").split("\n").find { |l| l.include?("v4") and l.include?("192") }.split(" ").last
