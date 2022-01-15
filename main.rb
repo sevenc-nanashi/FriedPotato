@@ -662,6 +662,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
     entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
       index = entities.find_index(e2)
       end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
+      next unless end_note
       if end_note[:archetype] == 7
         e2[:archetype] = 18
       else
