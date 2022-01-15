@@ -67,7 +67,7 @@ get "/backgrounds/list" do
         },
         configuration: {
           type: :BackgroundConfiguration,
-          url: "/repo/config",
+          url: "/repo/config.gz",
         },
       }
     end,
@@ -99,7 +99,7 @@ get "/backgrounds/:name" do |name|
       },
       configuration: {
         type: :BackgroundConfiguration,
-        url: "/repo/config",
+        url: "/repo/config.gz",
       },
     },
   }.to_json
