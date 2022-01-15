@@ -64,3 +64,5 @@ level_datas/*
 !level_datas/.gitkeep
 overrides/*
 !overrides/.gitkeep
+
+*.psd

@@ -284,6 +284,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       File.read('..\sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
     )
   end
+  level_hash[:item][:engine][:skin][:name] = "pjsekai.extended"
   level_hash[:item][:engine][:skin][:data][:url] = "/skin/data"
   skin_data_hash = Digest::SHA1.hexdigest(File.read("./skin/data.json"))
   if File.exist?("./dist/skin/#{skin_data_hash}.gz")
@@ -584,6 +585,69 @@ end
 
 get %r{(?:/tests/([^/]+))?/engine} do |name|
   File.read('../sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+end
+
+get "/skins/list" do
+  <<~JSON
+    {
+      "pageCount": 1,
+      "items": [
+        {
+          "author": "Sonolus",
+          "data": {
+              "hash": "b72c09be74ee2e67692a68b814c473462bc5b352ac8c94bd87b9089cde704d37",
+              "type": "SkinData",
+              "url": "/skin/data"
+          },
+          "name": "pjsekai.extended",
+          "subtitle": "Project Sekai: Colorful Stage!",
+          "texture": {
+              "hash": "f5d2808b2473e60dbfc9fef8167a93d1d7e0fcf9989b04960ca52137774db980",
+              "type": "SkinTexture",
+              "url": "/skin/texture"
+          },
+          "thumbnail": {
+              "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
+              "type": "SkinThumbnail",
+              "url": "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+          },
+          "title": "Project Sekai",
+          "version": 2
+        }
+      ]
+    }
+  JSON
+end
+
+get "/skins/pjsekai.extended" do
+  <<~JSON
+    {
+      "item": {
+        "author": "Sonolus",
+        "data": {
+            "hash": "b72c09be74ee2e67692a68b814c473462bc5b352ac8c94bd87b9089cde704d37",
+            "type": "SkinData",
+            "url": "/skin/data"
+        },
+        "name": "pjsekai.extended",
+        "subtitle": "Project Sekai: Colorful Stage!",
+        "texture": {
+            "hash": "f5d2808b2473e60dbfc9fef8167a93d1d7e0fcf9989b04960ca52137774db980",
+            "type": "SkinTexture",
+            "url": "/skin/texture"
+        },
+        "thumbnail": {
+            "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
+            "type": "SkinThumbnail",
+            "url": "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+        },
+        "title": "Project Sekai",
+        "version": 2
+      },
+      "description": "PjSekai + Trace notes",
+      "recommended": []
+    }
+  JSON
 end
 
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|

@@ -6,6 +6,7 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dxruby (1.4.7)
+    ffi (1.15.4-x64-mingw32)
     ffi (1.15.4-x86-mingw32)
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
@@ -46,10 +47,12 @@ GEM
     tilt (2.0.10)
     unf (0.1.4)
       unf_ext
+    unf_ext (0.0.8-x64-mingw32)
     unf_ext (0.0.8-x86-mingw32)
     webrick (1.7.0)
 
 PLATFORMS
+  x64-mingw32
   x86-mingw32
 
 DEPENDENCIES
@@ -60,4 +63,4 @@ DEPENDENCIES
   webrick (~> 1.7)
 
 BUNDLED WITH
-   2.2.22
+   2.2.32
