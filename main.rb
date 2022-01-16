@@ -279,9 +279,13 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
     end
   end
   if Dir.exist?("../sonolus-pjsekai-engine")
-    level_hash[:item][:engine][:data][:url] = "/engine"
+    level_hash[:item][:engine][:data][:url] = "/engine/data"
     level_hash[:item][:engine][:data][:hash] = Digest::SHA256.hexdigest(
       File.read('..\sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+    )
+    level_hash[:item][:engine][:configuration][:url] = "/engine/configuration"
+    level_hash[:item][:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
+      File.read('..\sonolus-pjsekai-engine\dist\EngineConfiguration', mode: "rb")
     )
   end
   level_hash[:item][:engine][:skin][:name] = "pjsekai.extended"
@@ -583,8 +587,11 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
   File.read("./dist/skin/#{hash}.gz", mode: "rb")
 end
 
-get %r{(?:/tests/([^/]+))?/engine} do |name|
+get %r{(?:/tests/([^/]+))?/engine/data} do |name|
   File.read('../sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+end
+get %r{(?:/tests/([^/]+))?/engine/configuration} do |name|
+  File.read('../sonolus-pjsekai-engine\dist\EngineConfiguration', mode: "rb")
 end
 
 get "/skins/list" do
@@ -659,10 +666,11 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   will_delete = []
   entities.filter { |e| e[:archetype] == 9 }.each do |e|
     next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
+    not_found = false
     entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
       index = entities.find_index(e2)
       end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
-      next unless end_note
+      next not_found = true unless end_note
       if end_note[:archetype] == 7
         e2[:archetype] = 18
       else
@@ -672,7 +680,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
       will_delete << end_note
     end
 
-    will_delete << e
+    will_delete << e unless not_found
   end
   wd_index = will_delete.filter_map { |e| entities.find_index(e) }
   will_delete.each do |e|
