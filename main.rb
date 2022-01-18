@@ -6,6 +6,11 @@ require "http"
 require "digest"
 require "zlib"
 require "yaml"
+require "socket"
+require "timeout"
+require "open3"
+
+$python_started = false
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
@@ -19,6 +24,10 @@ class Config
     trace_enabled: {
       description: "TRACEノーツを使用するかどうか。32分スライドが置き換わります。",
       default: false,
+    },
+    background_engine: {
+      description: "背景生成のエンジン。dxruby、pillow、noneのいずれかを指定して下さい。",
+      default: "none",
     },
   }
 
@@ -46,6 +55,7 @@ class Config
         y.puts "# #{KEYS[key][:description]}"
         y.puts "# デフォルト: #{KEYS[key][:default]}"
         y.puts "#{key}: #{value}"
+        y.puts
       end
     end
   end
@@ -56,10 +66,12 @@ class Config
       else
         {}
       end
+    save_flag = false
     (KEYS.keys - @config.keys).each do |key|
+      save_flag = true
       @config[key] = KEYS[key][:default]
     end
-    save unless File.exist?("./config.yml")
+    save if save_flag
   end
 end
 
@@ -163,8 +175,23 @@ end
 
 get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
   unless File.exists?("dist/bg/#{name}.png")
-    $current = name
-    eval File.read("./bg_gen/main.rb")
+    case config.background_engine
+    when "dxruby"
+      $current = name
+      eval File.read("./bg_gen/main.rb")
+    when "pillow"
+      unless $python_started
+        Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py")
+        $python_started = true
+      end
+      HTTP.get("http://localhost:4568/generate/#{name}")
+    when "none"
+      if name.end_with?(".extra")
+        redirect "/repo/background-base-extra.png"
+      else
+        redirect "/repo/background-base.png"
+      end
+    end
   end
   File.read("dist/bg/#{name}.png", mode: "rb")
 end
