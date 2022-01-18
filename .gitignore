@@ -66,3 +66,4 @@ overrides/*
 !overrides/.gitkeep
 
 *.psd
+config.yml

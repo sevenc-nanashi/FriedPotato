@@ -5,9 +5,65 @@ require "sinatra/reloader"
 require "http"
 require "digest"
 require "zlib"
+require "yaml"
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
+
+class Config
+  KEYS = {
+    engine_path: {
+      description: "エンジンのパス。",
+      default: "../sonolus-pjsekai-engine",
+    },
+    trace_enabled: {
+      description: "TRACEノーツを使用するかどうか。32分スライドが置き換わります。",
+      default: false,
+    },
+  }
+
+  def initialize
+    load
+  end
+
+  def method_missing(name, value = nil)
+    if name.end_with?("=")
+      unless KEYS.key?(name.to_s.chop.to_sym)
+        raise "unknown key: #{name}"
+      end
+      @config[name.to_s.chop.to_sym] = value
+      save
+    else
+      load
+      raise "unknown key: #{name}" if @config.key?(name).nil?
+      @config[name]
+    end
+  end
+
+  def save
+    File.open("./config.yml", "w") do |y|
+      @config.each do |key, value|
+        y.puts "# #{KEYS[key][:description]}"
+        y.puts "# デフォルト: #{KEYS[key][:default]}"
+        y.puts "#{key}: #{value}"
+      end
+    end
+  end
+
+  def load
+    @config = if File.exist?("./config.yml")
+        YAML.load(File.read("./config.yml"), symbolize_names: true)
+      else
+        {}
+      end
+    (KEYS.keys - @config.keys).each do |key|
+      @config[key] = KEYS[key][:default]
+    end
+    save unless File.exist?("./config.yml")
+  end
+end
+
+config = Config.new
 
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
@@ -278,14 +334,14 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
     end
   end
-  if Dir.exist?("../sonolus-pjsekai-engine")
+  if Dir.exist?(config.engine_path)
     level_hash[:item][:engine][:data][:url] = "/engine/data"
     level_hash[:item][:engine][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read('..\sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+      File.read(config.engine_path + "/dist/EngineData", mode: "rb")
     )
     level_hash[:item][:engine][:configuration][:url] = "/engine/configuration"
     level_hash[:item][:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
-      File.read('..\sonolus-pjsekai-engine\dist\EngineConfiguration', mode: "rb")
+      File.read(config.engine_path + "/dist/EngineConfiguration", mode: "rb")
     )
   end
   level_hash[:item][:engine][:skin][:name] = "pjsekai.extended"
@@ -588,10 +644,10 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
 end
 
 get %r{(?:/tests/([^/]+))?/engine/data} do |name|
-  File.read('../sonolus-pjsekai-engine\dist\EngineData', mode: "rb")
+  File.read(config.engine_path + "/dist/EngineData", mode: "rb")
 end
 get %r{(?:/tests/([^/]+))?/engine/configuration} do |name|
-  File.read('../sonolus-pjsekai-engine\dist\EngineConfiguration', mode: "rb")
+  File.read(config.engine_path + "/dist/EngineConfiguration", mode: "rb")
 end
 
 get "/skins/list" do
@@ -658,41 +714,45 @@ get "/skins/pjsekai.extended" do
 end
 
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
-  next File.read("./dist/modify/#{hash}.gz", mode: "rb") if File.exists?("./dist/modify/#{hash}.gz")
+  cfg = [[?t, config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
+  key = "#{hash}-#{cfg}"
+  next File.read("./dist/modify/#{key}.gz", mode: "rb") if File.exists?("./dist/modify/#{hash}.gz")
   raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
   gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
   entities = level_data[:entities]
   will_delete = []
-  entities.filter { |e| e[:archetype] == 9 }.each do |e|
-    next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
-    not_found = false
-    entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
-      index = entities.find_index(e2)
-      end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
-      next not_found = true unless end_note
-      if end_note[:archetype] == 7
-        e2[:archetype] = 18
-      else
-        e2[:archetype] = 19
-        e2[:data][:values][3] = end_note[:data][:values][3]
+  if config.trace_enabled
+    entities.filter { |e| e[:archetype] == 9 }.each do |e|
+      next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
+      not_found = false
+      entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
+        index = entities.find_index(e2)
+        end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
+        next not_found = true unless end_note
+        if end_note[:archetype] == 7
+          e2[:archetype] = 18
+        else
+          e2[:archetype] = 19
+          e2[:data][:values][3] = end_note[:data][:values][3]
+        end
+        will_delete << end_note
       end
-      will_delete << end_note
-    end
 
-    will_delete << e unless not_found
+      will_delete << e unless not_found
+    end
+    wd_index = will_delete.filter_map { |e| entities.find_index(e) }
+    will_delete.each do |e|
+      entities.delete(e)
+    end
+    entities.filter { |e| [7, 9].include?(e[:archetype]) }.each do |e|
+      e[:data][:values][-1] -= wd_index.filter { |i| i < e[:data][:values][-1] }.length
+    end
   end
-  wd_index = will_delete.filter_map { |e| entities.find_index(e) }
-  will_delete.each do |e|
-    entities.delete(e)
-  end
-  entities.filter { |e| [7, 9].include?(e[:archetype]) }.each do |e|
-    e[:data][:values][-1] -= wd_index.filter { |i| i < e[:data][:values][-1] }.length
-  end
-  Zlib::GzipWriter.wrap(File.open("./dist/modify/#{hash}.gz", "wb")) do |gz|
+  Zlib::GzipWriter.wrap(File.open("./dist/modify/#{key}.gz", "wb")) do |gz|
     gz.write(level_data.to_json)
   end
-  File.read("./dist/modify/#{hash}.gz", mode: "rb")
+  File.read("./dist/modify/#{key}.gz", mode: "rb")
 end
 
 ip = `ipconfig`.force_encoding("ascii-8bit").split("\n").find { |l| l.include?("v4") and l.include?("192") }.split(" ").last
