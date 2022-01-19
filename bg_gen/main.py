@@ -3,6 +3,7 @@ from PIL import Image, ImageOps
 from io import BytesIO
 import requests
 from flask import Flask
+import sys
 
 dir = os.path.dirname(__file__)
 base_normal = Image.open(dir + "/background-base.png")
@@ -110,4 +111,4 @@ def generate(name: str):
     return {"status": "ok"}
 
 
-app.run(port=4568, debug=True)
+app.run(port=int(sys.argv[1]), debug=True)

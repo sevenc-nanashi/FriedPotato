@@ -9,12 +9,9 @@ require "yaml"
 require "socket"
 require "open3"
 
-set :bind, "0.0.0.0"
-set :public_folder, File.dirname(__FILE__) + "/public"
-
 def python_started?
   begin
-    Socket.tcp("localhost", 4568, connect_timeout: 0.1) { }
+    Socket.tcp("localhost", $config.python_port, connect_timeout: 0.1) { }
   rescue Errno::ETIMEDOUT
     return false
   else
@@ -35,6 +32,14 @@ class Config
     background_engine: {
       description: "背景生成のエンジン。dxruby、pillow、noneのいずれかを指定して下さい。",
       default: "none",
+    },
+    port: {
+      description: "ポート番号。",
+      default: 4567,
+    },
+    python_port: {
+      description: "Pythonのポート番号。",
+      default: 4568,
     },
   }
 
@@ -82,8 +87,11 @@ class Config
   end
 end
 
-config = Config.new
+$config = Config.new
 
+set :bind, "0.0.0.0"
+set :public_folder, File.dirname(__FILE__) + "/public"
+set :port, $config.port
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/info" do
@@ -182,15 +190,15 @@ end
 
 get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
   unless File.exists?("dist/bg/#{name}.png")
-    case config.background_engine
+    case $config.background_engine
     when "dxruby"
       $current = name
       eval File.read("./bg_gen/main.rb")
     when "pillow"
       unless python_started?
-        Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py")
+        Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py #{$config.python_port}")
       end
-      HTTP.get("http://localhost:4568/generate/#{name}")
+      HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
     when "none"
       if name.end_with?(".extra")
         redirect "/repo/background-base-extra.png"
@@ -367,14 +375,14 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
     end
   end
-  if Dir.exist?(config.engine_path)
+  if Dir.exist?($config.engine_path)
     level_hash[:item][:engine][:data][:url] = "/engine/data"
     level_hash[:item][:engine][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read(config.engine_path + "/dist/EngineData", mode: "rb")
+      File.read($config.engine_path + "/dist/EngineData", mode: "rb")
     )
     level_hash[:item][:engine][:configuration][:url] = "/engine/configuration"
     level_hash[:item][:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
-      File.read(config.engine_path + "/dist/EngineConfiguration", mode: "rb")
+      File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
     )
   end
   level_hash[:item][:engine][:skin][:name] = "pjsekai.extended"
@@ -677,10 +685,10 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
 end
 
 get %r{(?:/tests/([^/]+))?/engine/data} do |name|
-  File.read(config.engine_path + "/dist/EngineData", mode: "rb")
+  File.read($config.engine_path + "/dist/EngineData", mode: "rb")
 end
 get %r{(?:/tests/([^/]+))?/engine/configuration} do |name|
-  File.read(config.engine_path + "/dist/EngineConfiguration", mode: "rb")
+  File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
 end
 
 get "/skins/list" do
@@ -747,7 +755,7 @@ get "/skins/pjsekai.extended" do
 end
 
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
-  cfg = [[?t, config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
+  cfg = [[?t, $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
   key = "#{hash}-#{cfg}"
   next File.read("./dist/modify/#{key}.gz", mode: "rb") if File.exists?("./dist/modify/#{hash}.gz")
   raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
@@ -755,7 +763,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
   entities = level_data[:entities]
   will_delete = []
-  if config.trace_enabled
+  if $config.trace_enabled
     entities.filter { |e| e[:archetype] == 9 }.each do |e|
       next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
       not_found = false
@@ -788,20 +796,20 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   File.read("./dist/modify/#{key}.gz", mode: "rb")
 end
 
-ip = `ipconfig`.force_encoding("ascii-8bit").split("\n").find { |l| l.include?("v4") and l.include?("192") }.split(" ").last
-puts "
-\e[91m+---------------------------------------------+\e[m
-\e[91m|            FriedPotatoへようこそ！          |\e[m
-\e[91m+---------------------------------------------+\e[m
+ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address
+puts <<~EOS.strip
+       \e[91m+---------------------------------------------+\e[m
+       \e[91m|            FriedPotatoへようこそ！          |\e[m
+       \e[91m+---------------------------------------------+\e[m
 
-Sonolusを開き、サーバーのURLに以下を入力して下さい：
-  \e[97mhttp://#{ip}:4567\e[m
-テストサーバーの場合は以下のURLを入力して下さい：
-  \e[97mhttp://#{ip}:4567/tests/テストサーバーID\e[m
+       Sonolusを開き、サーバーのURLに以下を入力して下さい：
+         \e[97mhttp://#{ip}:#{$config.port}\e[m
+       テストサーバーの場合は以下のURLを入力して下さい：
+         \e[97mhttp://#{ip}:#{$config.port}/tests/\e[m<テストサーバーID>
 
 
-\e[97mCtrl+C\e[m を押すと終了します。
+       \e[97mCtrl+C\e[m を押すと終了します。
 
-Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
-".strip
+       Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
+     EOS
 puts
