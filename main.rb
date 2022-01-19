@@ -7,13 +7,20 @@ require "digest"
 require "zlib"
 require "yaml"
 require "socket"
-require "timeout"
 require "open3"
-
-$python_started = false
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
+
+def python_started?
+  begin
+    Socket.tcp("localhost", 4568, connect_timeout: 0.1) { }
+  rescue Errno::ETIMEDOUT
+    return false
+  else
+    return true
+  end
+end
 
 class Config
   KEYS = {
@@ -180,9 +187,8 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       $current = name
       eval File.read("./bg_gen/main.rb")
     when "pillow"
-      unless $python_started
+      unless python_started?
         Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py")
-        $python_started = true
       end
       HTTP.get("http://localhost:4568/generate/#{name}")
     when "none"
