@@ -19,6 +19,15 @@ def python_started?
   end
 end
 
+SEARCH_OPTION = [
+  {
+    name: "#KEYWORDS",
+    placeholder: "#KEYWORDS",
+    query: "keywords",
+    type: "text",
+  },
+]
+
 class Config
   KEYS = {
     engine_path: {
@@ -32,6 +41,10 @@ class Config
     background_engine: {
       description: "背景生成のエンジン。dxruby、pillow、noneのいずれかを指定して下さい。",
       default: "none",
+    },
+    sonolus_5_10: {
+      description: "Sonolusがv0.5.10かどうか。",
+      default: true,
     },
     port: {
       description: "ポート番号。",
@@ -96,7 +109,7 @@ $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/info" do
   {
-    levels: JSON.parse(File.read("./info.json")),
+    levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
     skins: [
       {
         name: "info_bg",
@@ -118,7 +131,7 @@ end
 
 get "/tests/:test_id/info" do |test_id|
   {
-    levels: JSON.parse(File.read("./info_test.json")),
+    levels: JSON.parse(File.read("./info_test.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
     skins: [],
     backgrounds: [],
     effects: [],
