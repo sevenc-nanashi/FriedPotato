@@ -460,11 +460,6 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
         hash: Digest::SHA1.hexdigest(File.read("./public/repo/extra_#{extra ? "off" : "on"}.png", mode: "rb")),
         url: "/repo/extra_#{extra ? "off" : "on"}.png",
       },
-      bgm: {
-        type: :LevelBgm,
-        hash: Digest::SHA1.hexdigest(File.read("./public/repo/connect.mp3", mode: "rb")),
-        url: "/repo/connect.mp3",
-      },
       data: {
         type: :LevelData,
         url: "/repo/data.gz",
@@ -482,11 +477,6 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
         type: :LevelCover,
         hash: Digest::SHA1.hexdigest(File.read("./public/repo/delete.png", mode: "rb")),
         url: "/repo/delete.png",
-      },
-      bgm: {
-        type: :LevelBgm,
-        hash: Digest::SHA1.hexdigest(File.read("./public/repo/connect.mp3", mode: "rb")),
-        url: "/repo/connect.mp3",
       },
       data: {
         type: :LevelData,
