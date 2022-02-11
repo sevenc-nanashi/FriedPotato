@@ -16,7 +16,7 @@ https://potato.purplepalette.net に少しだけ機能を追加したサーバ�
 
 ## 動かし方
 
-1. [Rubyをインストールします。](https://rubyinstaller.org)[Ruby3.0.2、x86](https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.2-1/rubyinstaller-devkit-3.0.2-1-x64.exe)が推奨です。
+1. [Rubyをインストールします。](https://rubyinstaller.org)[Ruby3.0、x86](https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.3-1/rubyinstaller-devkit-3.0.3-1-x86.exe)が推奨です。
 1. PCを再起動します。
 1. 右上のCodeボタンから`Download ZIP`でZipをダウンロードします。
 1. 適当なところに解凍します。
