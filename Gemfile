@@ -15,3 +15,5 @@ gem "webrick", "~> 1.7"
 gem "http", "~> 5.0.4"
 
 gem "dxruby", "~> 1.4"
+
+ruby ">= 3.0.3"
