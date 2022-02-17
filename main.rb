@@ -270,14 +270,6 @@ get "/tests/:test_id/levels/list" do |test_id|
   ppdata.to_json
 end
 
-get "/levels/Welcome!" do
-  {
-    description: "",
-    recommended: [],
-    item: JSON.parse(File.read("./info.json"), symbolize_names: true)[0],
-  }.to_json
-end
-
 get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
   if name.start_with?("l_")
     level_raw = HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
