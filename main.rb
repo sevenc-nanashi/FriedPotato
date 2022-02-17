@@ -104,7 +104,11 @@ $config = Config.new
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
-set :port, $config.port
+if ENV["RACK_ENV"] == "production"
+  set :port, ENV["PORT"]
+else
+  set :port, $config.port
+end
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/info" do
