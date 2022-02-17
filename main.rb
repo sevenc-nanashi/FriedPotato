@@ -109,8 +109,12 @@ if ENV["RACK_ENV"] == "production"
   set :port, ENV["PORT"]
   FileUtils.cp("./config.production.yml", "./config.yml")
   FileUtils.mkdir_p("engine/dist")
-  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862143063826442/EngineData").save("engine/dist/EngineData")
-  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862142904434688/EngineConfiguration").save("engine/dist/EngineConfiguration")
+  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862143063826442/EngineData").body.then do |body|
+    File.write("engine/dist/EngineData", body, mode: "wb")
+  end
+  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862142904434688/EngineConfiguration").body.then do |body|
+    File.write("engine/dist/EngineConfiguration", body, mode: "wb")
+  end
 else
   set :port, $config.port
 end
@@ -222,7 +226,9 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
     when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").save("dist/bg/#{name}.png")
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").body.then do |res|
+        File.write("dist/bg/#{name}.png", res, mode: "wb")
+      end
     when "none"
       if name.end_with?(".extra")
         redirect "/repo/background-base-extra.png"
