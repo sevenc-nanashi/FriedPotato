@@ -39,8 +39,8 @@ class Config
       default: false,
     },
     background_engine: {
-      description: "背景生成のエンジン。dxruby、pillow、noneのいずれかを指定して下さい。",
-      default: "none",
+      description: "背景生成のエンジン。dxruby、pillow、web、noneのいずれかを指定して下さい。",
+      default: "web",
     },
     sonolus_5_10: {
       description: "Sonolusがv0.5.10かどうか。",
@@ -212,6 +212,10 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
         Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py #{$config.python_port}")
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
+    when "web"
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").body.then do |res|
+        File.write("dist/bg/#{name}.png", res, mode: "wb")
+      end
     when "none"
       if name.end_with?(".extra")
         redirect "/repo/background-base-extra.png"
