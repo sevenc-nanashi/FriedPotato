@@ -1,0 +1,20 @@
+# エンジンのパス。
+# デフォルト: ../sonolus-pjsekai-engine
+engine_path: ./engine
+
+# TRACEノーツを使用するかどうか。32分スライドが置き換わります。
+# デフォルト: false
+trace_enabled: false
+
+# 背景生成のエンジン。dxruby、pillow、noneのいずれかを指定して下さい。
+# デフォルト: none
+background_engine: web
+
+# ポート番号。
+# デフォルト: 4567
+port: 80
+
+# Sonolusがv0.5.10かどうか。
+# デフォルト: true
+sonolus_5_10: true
+
