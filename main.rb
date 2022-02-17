@@ -1,6 +1,7 @@
 require "json"
 require "uri"
 require "sinatra"
+require "fileutils"
 require "sinatra/reloader"
 require "http"
 require "digest"
@@ -106,6 +107,10 @@ set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
   set :port, ENV["PORT"]
+  FileUtils.cp("./config.production.yml", "./config.yml")
+  FileUtils.mkdir_p("engine/dist")
+  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862143063826442/EngineData").save("engine/dist/EngineData")
+  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862142904434688/EngineConfiguration").save("engine/dist/EngineConfiguration")
 else
   set :port, $config.port
 end
@@ -217,9 +222,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
     when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").body.then do |res|
-        File.write("dist/bg/#{name}.png", res, mode: "wb")
-      end
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").save("dist/bg/#{name}.png")
     when "none"
       if name.end_with?(".extra")
         redirect "/repo/background-base-extra.png"
