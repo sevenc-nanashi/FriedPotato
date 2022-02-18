@@ -227,11 +227,19 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
     when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name.split(".")[0]}?extra=#{name.include?(".extra")}").body.then do |res|
-        File.write("dist/bg/#{name}.png", res, mode: "wb")
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name.split(".")[0]}?extra=#{name.include?(".extra")}").then do |res|
+        if res.status == 200
+          File.write("dist/bg/#{name}.png", res.body, mode: "wb")
+        else
+          if name.include?(".extra")
+            redirect "/repo/background-base-extra.png"
+          else
+            redirect "/repo/background-base.png"
+          end
+        end
       end
     when "none"
-      if name.end_with?(".extra")
+      if name.include?(".extra")
         redirect "/repo/background-base-extra.png"
       else
         redirect "/repo/background-base.png"
