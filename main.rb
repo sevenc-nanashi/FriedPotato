@@ -3,6 +3,7 @@ require "uri"
 require "sinatra"
 require "fileutils"
 require "sinatra/reloader"
+require "sinatra/json"
 require "http"
 require "digest"
 require "zlib"
@@ -121,7 +122,7 @@ end
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/info" do
-  {
+  json ({
     levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
     skins: [
       {
@@ -139,18 +140,18 @@ get "/info" do
     effects: [],
     particles: [],
     engines: [],
-  }.to_json
+  })
 end
 
 get "/tests/:test_id/info" do |test_id|
-  {
+  json ({
     levels: JSON.parse(File.read("./info_test.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
     skins: [],
     backgrounds: [],
     effects: [],
     particles: [],
     engines: [],
-  }.to_json
+  })
 end
 get "/backgrounds/list" do
   levels = JSON.parse(HTTP.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
@@ -181,12 +182,12 @@ get "/backgrounds/list" do
       }
     end,
   }
-  res.to_json
+  json res
 end
 
 get "/backgrounds/:name" do |name|
   level = JSON.parse(HTTP.get("https://servers.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
-  {
+  json ({
     description: level[:description],
     recommended: [],
     item: {
@@ -211,7 +212,7 @@ get "/backgrounds/:name" do |name|
         url: "/repo/config.gz",
       },
     },
-  }.to_json
+  })
 end
 
 get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
@@ -226,7 +227,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
     when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}").body.then do |res|
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name.split(".")[0]}?extra=#{name.include?(".extra")}").body.then do |res|
         File.write("dist/bg/#{name}.png", res, mode: "wb")
       end
     when "none"
@@ -237,7 +238,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       end
     end
   end
-  File.read("dist/bg/#{name}.png", mode: "rb")
+  send_file "dist/bg/#{name}.png"
 end
 
 get "/levels/list" do
@@ -260,14 +261,14 @@ get "/levels/list" do
     end
     ppdata[:pageCount] += 1
   end
-  ppdata.to_json
+  json ppdata
 end
 
 get "/tests/:test_id/levels/list" do |test_id|
   ppdata = JSON.parse(
     HTTP.get("https://servers.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
-  ppdata.to_json
+  json ppdata
 end
 
 get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
@@ -494,11 +495,11 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       engine: {},
     }
   end
-  level_hash.to_json
+  json level_hash
 end
 
 get "/effects/pjsekai.fixed" do
-  {
+  json ({
     "description": "",
     "item": {
       "author": "Sonolus",
@@ -518,7 +519,7 @@ get "/effects/pjsekai.fixed" do
       "version": 2,
     },
     "recommended": [],
-  }.to_json
+  })
 end
 
 get %r{(?:/tests/.+)?/convert/(.+)} do |name|
@@ -667,11 +668,11 @@ get %r{(?:/tests/.+)?/convert/(.+)} do |name|
   Zlib::GzipWriter.wrap(File.open("./dist/conv/#{name}.gz", "wb")) do |gz|
     gz.write(base.to_json)
   end
-  File.read("./dist/conv/#{name}.gz", mode: "rb")
+  send_file "./dist/conv/#{name}.gz"
 end
 
 get %r{(?:/tests/.+)?/overrides/(.+)} do |path|
-  File.read("./overrides/#{path}", mode: "rb")
+  send_file "./overrides/#{path}"
 end
 
 get %r{(?:/tests/([^/]+))?/repo/(.+)} do |name, path|
@@ -679,11 +680,11 @@ get %r{(?:/tests/([^/]+))?/repo/(.+)} do |name, path|
 end
 
 get %r{(?:/tests/([^/]+))?/data-overrides/(.+)} do |name, path|
-  File.read("./dist/data-overrides/#{path}", mode: "rb")
+  send_file "./dist/data-overrides/#{path}"
 end
 
 get %r{(?:/tests/([^/]+))?/skin/texture} do |name|
-  File.read("./skin/texture.png", mode: "rb")
+  send_file "./skin/texture.png"
 end
 
 get %r{(?:/tests/([^/]+))?/skin/data} do |name|
@@ -693,7 +694,7 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
       gz.write(File.read("./skin/data.json", mode: "rb"))
     end
   end
-  File.read("./dist/skin/#{hash}.gz", mode: "rb")
+  send_file "./dist/skin/#{hash}.gz"
 end
 
 get %r{(?:/tests/([^/]+))?/engine/data} do |name|
@@ -805,7 +806,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   Zlib::GzipWriter.wrap(File.open("./dist/modify/#{key}.gz", "wb")) do |gz|
     gz.write(level_data.to_json)
   end
-  File.read("./dist/modify/#{key}.gz", mode: "rb")
+  send_file "./dist/modify/#{key}.gz"
 end
 
 ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address

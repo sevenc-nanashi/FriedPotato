@@ -17,3 +17,5 @@ gem "http", "~> 5.0.4"
 gem "dxruby", "~> 1.4"
 
 ruby ">= 3.0.3"
+
+gem "sinatra-contrib", "~> 2.1"

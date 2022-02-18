@@ -59,6 +59,7 @@ DEPENDENCIES
   dxruby (~> 1.4)
   http (~> 5.0.4)
   sinatra (~> 2.1)
+  sinatra-contrib (~> 2.1)
   sinatra-reloader (~> 1.0)
   webrick (~> 1.7)
 
