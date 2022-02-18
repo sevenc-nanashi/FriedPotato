@@ -706,10 +706,10 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
 end
 
 get %r{(?:/tests/([^/]+))?/engine/data} do |name|
-  File.read($config.engine_path + "/dist/EngineData", mode: "rb")
+  send_file $config.engine_path + "/dist/EngineData"
 end
 get %r{(?:/tests/([^/]+))?/engine/configuration} do |name|
-  File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
+  send_file $config.engine_path + "/dist/EngineConfiguration"
 end
 
 get "/skins/list" do
