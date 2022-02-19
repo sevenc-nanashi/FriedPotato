@@ -1,1 +1,1 @@
-web: bundle exec ruby main.rb
+web: unicorn main.rb
