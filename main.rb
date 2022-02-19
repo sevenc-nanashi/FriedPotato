@@ -145,7 +145,7 @@ end
 
 get "/tests/:test_id/info" do |test_id|
   json ({
-    levels: JSON.parse(File.read("./info_test.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
+    levels: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id)).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
     skins: [],
     backgrounds: [],
     effects: [],
