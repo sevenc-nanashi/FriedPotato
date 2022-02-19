@@ -67,3 +67,9 @@ overrides/*
 
 *.psd
 config.yml
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
