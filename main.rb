@@ -21,6 +21,183 @@ def python_started?
   end
 end
 
+def modify_level!(level, extra)
+  name = level[:name]
+  if level[:engine][:name] == "wbp-pjsekai"
+    level[:engine] = {
+      name: "pjsekai",
+      version: 4,
+      title: "プロセカ（コンバーター）",
+      subtitle: "プロジェクトセカイ カラフルステージ!",
+      author: "Burrito",
+      skin: {
+        name: "pjsekai.classic",
+        version: 2,
+        title: "Project Sekai",
+        subtitle: "Project Sekai: Colorful Stage!",
+        author: "Sonolus",
+        thumbnail: { type: "SkinThumbnail",
+                     hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
+                     url: "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289" },
+        data: { type: "SkinData",
+                hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
+                url: "https://servers.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af" },
+        texture: { type: "SkinTexture",
+                   hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
+                   url: "https://servers.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c" },
+      },
+      effect: {
+        name: "pjsekai.fixed",
+        version: 2,
+        title: "Project Sekai",
+        subtitle: "Project Sekai: Colorful Stage!",
+        author: "Sonolus",
+        thumbnail: { type: "EffectThumbnail",
+                     hash: "e5f439916eac9bbd316276e20aed999993653560",
+                     url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
+        data: { type: "EffectData",
+                hash: "17eb8ab357ad216d05e68a2752847ef4280252b3",
+                url: "/repo/seconfig.gz" },
+      },
+      particle: {
+        name: "pjsekai.classic",
+        version: 1,
+        title: "Project Sekai",
+        subtitle: "Project Sekai: Colorful Stage!",
+        author: "Sonolus",
+        thumbnail: { type: "ParticleThumbnail",
+                     hash: "e5f439916eac9bbd316276e20aed999993653560",
+                     url: "https://servers.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
+        data: { type: "ParticleData",
+                hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
+                url: "https://servers.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8" },
+        texture: { type: "ParticleTexture",
+                   hash: "4850a8f335204108c439def535bcf693c7f8d050",
+                   url: "https://servers.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050" },
+      },
+      thumbnail: {
+        type: "EngineThumbnail",
+        hash: "e5f439916eac9bbd316276e20aed999993653560",
+        url: "https://servers.purplepalette.net/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+      },
+      data: {
+        type: "EngineData",
+        hash: "86773c786f00b8b6cd2f6f99be11f62281385133",
+        url: "https://servers.purplepalette.net/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133",
+      },
+      configuration: {
+        type: "EngineConfiguration",
+        hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+        url: "https://servers.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+      },
+    }
+    level[:data][:url] = "/convert/#{level[:name]}"
+    level[:data].delete(:hash)
+    level[:data][:hash] = Digest::SHA256.hexdigest(File.read("./convert/#{level[:name]}.gz")) if File.exists?("./convert/#{level[:name]}.gz")
+  elsif level[:engine][:name] == "psekai"
+    level[:data][:url] = "/convert/l_#{level[:name]}"
+    level[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+    level[:name] = "l_" + level[:name]
+
+    level[:engine] = JSON.parse(
+      File.read("./convert-engine.json")
+        .gsub("!name!", level[:name])
+        .gsub("!artists!", level[:artists])
+        .gsub("!author!", level[:author])
+        .gsub("!title!", level[:title]),
+      symbolize_names: true,
+    )
+  else
+    level[:data][:url] = "/modify/#{level[:name]}-#{level[:data][:hash]}"
+    if File.exists?("dist/modify/#{level[:data][:hash]}.gz")
+      level[:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/modify/#{level[:data][:hash]}.gz", mode: "rb"))
+    else
+      level[:data].delete(:hash)
+    end
+  end
+  img_name = level[:name].dup
+  if extra
+    img_name += ".extra"
+    level[:title] += " (Extra)"
+    level[:name] += ".extra"
+  end
+  if Dir.exist?("./overrides/#{name}")
+    if File.exist?("./overrides/#{name}/thumbnail.png")
+      level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
+      level[:cover][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/thumbnail.png"))
+    end
+    if File.exist?("./overrides/#{name}/bgm.mp3")
+      level[:bgm][:url] = "/overrides/#{name}/bgm.mp3"
+      level[:bgm][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/bgm.mp3"))
+    end
+    if File.exist?("./overrides/#{name}/data.json")
+      json_hash = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/data.json"))
+      Zlib::GzipWriter.open("./dist/data-overrides/#{json_hash}.gz") do |gz|
+        gz.write(File.read("./overrides/#{name}/data.json"))
+      end
+      level[:data][:url] = "/data-overrides/#{json_hash}.gz"
+      level[:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
+    end
+  end
+  if Dir.exist?($config.engine_path)
+    level[:engine][:data][:url] = "/engine/data"
+    level[:engine][:data][:hash] = Digest::SHA256.hexdigest(
+      File.read($config.engine_path + "/dist/EngineData", mode: "rb")
+    )
+    level[:engine][:configuration][:url] = "/engine/configuration"
+    level[:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
+      File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
+    )
+  end
+  level[:engine][:skin][:name] = "pjsekai.extended"
+  level[:engine][:skin][:data][:url] = "/skin/data"
+  skin_data_hash = Digest::SHA1.hexdigest(File.read("./skin/data.json"))
+  if File.exist?("./dist/skin/#{skin_data_hash}.gz")
+    level[:engine][:skin][:data][:hash] = Digest::SHA256.hexdigest(
+      File.read("./dist/skin/#{skin_data_hash}.gz")
+    )
+  else
+    level[:engine][:skin][:data].delete(:hash)
+  end
+
+  level[:engine][:skin][:texture][:url] = "/skin/texture"
+  level[:engine][:skin][:texture][:hash] = Digest::SHA256.hexdigest(
+    File.read("./skin/texture.png", mode: "rb")
+  )
+
+  level[:engine][:background] = {
+    name: level[:name],
+    version: 2,
+    title: level[:title],
+    subtitle: "#{level[:artists]} / #{level[:author]}",
+    thumbnail: {
+      type: :BackgroundThumbnail,
+      hash: level[:cover][:hash],
+      url: level[:cover][:url],
+    },
+    data: {
+      type: :BackgroundData,
+      hash: Digest::SHA1.hexdigest(File.read("./public/repo/data.gz", mode: "rb")),
+      url: "/repo/data.gz",
+    },
+    image: {
+      type: :BackgroundImage,
+      url: "/generate/#{img_name}",
+    },
+    configuration: {
+      type: :BackgroundConfiguration,
+      hash: Digest::SHA1.hexdigest(File.read("./public/repo/config.gz", mode: "rb")),
+      url: "/repo/config.gz",
+    },
+  }
+  level[:engine][:effect][:name] = "pjsekai.fixed"
+  level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
+  level[:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
+  if File.exists?("dist/bg/#{img_name}.png")
+    level[:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/bg/#{level[:name]}.png", mode: "rb"))
+  end
+end
+
 SEARCH_OPTION = [
   {
     name: "#KEYWORDS",
@@ -269,6 +446,7 @@ get "/levels/list" do
     end
     ppdata[:pageCount] += 1
   end
+  ppdata[:items].each { modify_level!(_1, false) }
   json ppdata
 end
 
@@ -276,6 +454,7 @@ get "/tests/:test_id/levels/list" do |test_id|
   ppdata = JSON.parse(
     HTTP.get("https://servers.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
+  ppdata[:items].each { modify_level!(_1, false) }
   json ppdata
 end
 
@@ -290,183 +469,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
   level = level_hash[:item]
   level_hash[:description] ||= ""
   extra = true if level_hash[:description].include?("#extra") || suffix == "extra"
-  if level_hash[:item][:engine][:name] == "wbp-pjsekai"
-    level_hash[:item][:engine] = {
-      name: "pjsekai",
-      version: 4,
-      title: "プロセカ（コンバーター）",
-      subtitle: "プロジェクトセカイ カラフルステージ!",
-      author: "Burrito",
-      skin: {
-        name: "pjsekai.classic",
-        version: 2,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "SkinThumbnail",
-                     hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
-                     url: "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289" },
-        data: { type: "SkinData",
-                hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-                url: "https://servers.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af" },
-        texture: { type: "SkinTexture",
-                   hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-                   url: "https://servers.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c" },
-      },
-      effect: {
-        name: "pjsekai.fixed",
-        version: 2,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "EffectThumbnail",
-                     hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
-        data: { type: "EffectData",
-                hash: "17eb8ab357ad216d05e68a2752847ef4280252b3",
-                url: "/repo/seconfig.gz" },
-      },
-      particle: {
-        name: "pjsekai.classic",
-        version: 1,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "ParticleThumbnail",
-                     hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
-        data: { type: "ParticleData",
-                hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
-                url: "https://servers.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8" },
-        texture: { type: "ParticleTexture",
-                   hash: "4850a8f335204108c439def535bcf693c7f8d050",
-                   url: "https://servers.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050" },
-      },
-      thumbnail: {
-        type: "EngineThumbnail",
-        hash: "e5f439916eac9bbd316276e20aed999993653560",
-        url: "https://servers.purplepalette.net/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
-      },
-      data: {
-        type: "EngineData",
-        hash: "86773c786f00b8b6cd2f6f99be11f62281385133",
-        url: "https://servers.purplepalette.net/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133",
-      },
-      configuration: {
-        type: "EngineConfiguration",
-        hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-        url: "https://servers.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-      },
-    }
-    level_hash[:item][:data][:url] = "/convert/#{level_hash[:item][:name]}"
-    level_hash[:item][:data].delete(:hash)
-    level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./convert/#{level_hash[:item][:name]}.gz")) if File.exists?("./convert/#{level_hash[:item][:name]}.gz")
-  elsif level_hash[:item][:engine][:name] == "psekai"
-    level_hash[:item][:data][:url] = "/convert/l_#{level_hash[:item][:name]}"
-    level_hash[:item][:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
-    level_hash[:item][:name] = "l_" + level_hash[:item][:name]
-
-    level_hash[:item][:engine] = JSON.parse(
-      File.read("./convert-engine.json")
-        .gsub("!name!", level_hash[:item][:name])
-        .gsub("!artists!", level_hash[:item][:artists])
-        .gsub("!author!", level_hash[:item][:author])
-        .gsub("!title!", level_hash[:item][:title]),
-      symbolize_names: true,
-    )
-  else
-    level_hash[:item][:data][:url] = "/modify/#{level_hash[:item][:name]}-#{level_hash[:item][:data][:hash]}"
-    if File.exists?("dist/modify/#{level_hash[:item][:data][:hash]}.gz")
-      level_hash[:item][:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/modify/#{level_hash[:item][:data][:hash]}.gz", mode: "rb"))
-    else
-      level_hash[:item][:data].delete(:hash)
-    end
-  end
-  img_name = level[:name].dup
-  if extra
-    img_name += ".extra"
-    level[:title] += " (Extra)"
-    level[:name] += ".extra"
-  end
-  if Dir.exist?("./overrides/#{name}")
-    if File.exist?("./overrides/#{name}/thumbnail.png")
-      level_hash[:item][:cover][:url] = "/overrides/#{name}/thumbnail.png"
-      level_hash[:item][:cover][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/thumbnail.png"))
-    end
-    if File.exist?("./overrides/#{name}/bgm.mp3")
-      level_hash[:item][:bgm][:url] = "/overrides/#{name}/bgm.mp3"
-      level_hash[:item][:bgm][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/bgm.mp3"))
-    end
-    if File.exist?("./overrides/#{name}/data.json")
-      json_hash = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/data.json"))
-      Zlib::GzipWriter.open("./dist/data-overrides/#{json_hash}.gz") do |gz|
-        gz.write(File.read("./overrides/#{name}/data.json"))
-      end
-      level_hash[:item][:data][:url] = "/data-overrides/#{json_hash}.gz"
-      level_hash[:item][:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
-    end
-  end
-  if Dir.exist?($config.engine_path)
-    level_hash[:item][:engine][:data][:url] = "/engine/data"
-    level_hash[:item][:engine][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read($config.engine_path + "/dist/EngineData", mode: "rb")
-    )
-    level_hash[:item][:engine][:configuration][:url] = "/engine/configuration"
-    level_hash[:item][:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
-      File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
-    )
-  end
-  level_hash[:item][:engine][:skin][:name] = "pjsekai.extended"
-  level_hash[:item][:engine][:skin][:data][:url] = "/skin/data"
-  skin_data_hash = Digest::SHA1.hexdigest(File.read("./skin/data.json"))
-  if File.exist?("./dist/skin/#{skin_data_hash}.gz")
-    level_hash[:item][:engine][:skin][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read("./dist/skin/#{skin_data_hash}.gz")
-    )
-  else
-    level_hash[:item][:engine][:skin][:data].delete(:hash)
-  end
-
-  level_hash[:item][:engine][:skin][:texture][:url] = "/skin/texture"
-  level_hash[:item][:engine][:skin][:texture][:hash] = Digest::SHA256.hexdigest(
-    File.read("./skin/texture.png", mode: "rb")
-  )
-
-  level_hash[:item][:engine][:background] = {
-    name: level[:name],
-    version: 2,
-    title: level[:title],
-    subtitle: "#{level[:artists]} / #{level[:author]}",
-    thumbnail: {
-      type: :BackgroundThumbnail,
-      hash: level[:cover][:hash],
-      url: level[:cover][:url],
-    },
-    data: {
-      type: :BackgroundData,
-      hash: Digest::SHA1.hexdigest(File.read("./public/repo/data.gz", mode: "rb")),
-      url: "/repo/data.gz",
-    },
-    image: {
-      type: :BackgroundImage,
-      url: "/generate/#{img_name}",
-    },
-    configuration: {
-      type: :BackgroundConfiguration,
-      hash: Digest::SHA1.hexdigest(File.read("./public/repo/config.gz", mode: "rb")),
-      url: "/repo/config.gz",
-    },
-  }
-  level_hash[:item][:engine][:effect][:name] = "pjsekai.fixed"
-  level_hash[:item][:engine][:effect][:data][:url] = "/repo/seconfig.gz"
-  level_hash[:item][:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
-  if suffix == "delete-cache"
-    File.delete("dist/bg/#{img_name}.png")
-  end
-
-  if File.exists?("dist/bg/#{img_name}.png")
-    level_hash[:item][:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/bg/#{level[:name]}.png", mode: "rb"))
-  end
+  modify_level!(level, extra)
   level_hash[:recommended] = [
     {
       name: extra ? level[:name][..-7] : level[:name] + ".extra",
