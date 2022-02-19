@@ -300,7 +300,7 @@ $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/info" do
   json ({
-    levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
+    levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: [
       {
         name: "info_bg",
@@ -313,7 +313,9 @@ get "/info" do
         subtitle: Dir.glob("./dist/conv/*.gz").size.to_s + "個",
       },
     ],
-    backgrounds: [],
+    backgrounds: {
+      search: { options: SEARCH_OPTION },
+    },
     effects: [],
     particles: [],
     engines: [],
@@ -322,7 +324,7 @@ end
 
 get "/tests/:test_id/info" do |test_id|
   json ({
-    levels: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id)).then { |i| $config.sonolus_5_10 ? { items: i, search: SEARCH_OPTION } : i },
+    levels: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id)).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: [],
     backgrounds: [],
     effects: [],
@@ -358,6 +360,7 @@ get "/backgrounds/list" do
         },
       }
     end,
+    search: { options: SEARCH_OPTION },
   }
   json res
 end
