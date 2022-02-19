@@ -1,0 +1,27 @@
+{
+  "name": "system",
+  "version": 1,
+  "rating": 0,
+  "engine": {
+    "name": "message",
+    "version": 4,
+    "title": "（メッセージ）",
+    "subtitle": "（メッセージ用）",
+    "author": "名無し｡"
+  },
+  "useSkin": {
+    "useDefault": true
+  },
+  "useBackground": {
+    "useDefault": true
+  },
+  "useEffect": {
+    "useDefault": true
+  },
+  "useParticle": {
+    "useDefault": true
+  },
+  "title": "システムのダミーレベルです！",
+  "artists": "この譜面はプレイできません。右上のボタンから戻ってください。",
+  "author": "by 名無し｡"
+}
