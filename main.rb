@@ -298,6 +298,10 @@ else
 end
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
+get "/" do
+  send_file "./public/index.html"
+end
+
 get "/info" do
   json ({
     levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
