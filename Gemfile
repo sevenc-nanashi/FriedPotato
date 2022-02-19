@@ -23,3 +23,5 @@ gem "sinatra-contrib", "~> 2.1"
 group :production, optional: true do
   gem "unicorn", "~> 6.1"
 end
+
+gem "puma", "~> 5.6"

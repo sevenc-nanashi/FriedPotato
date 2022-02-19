@@ -26,7 +26,10 @@ GEM
     multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
+    nio4r (2.5.8)
     public_suffix (4.0.6)
+    puma (5.6.2)
+      nio4r (~> 2.0)
     rack (2.2.3)
     rack-protection (2.1.0)
       rack
@@ -54,7 +57,6 @@ GEM
     unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
-    webrick (1.7.0)
 
 PLATFORMS
   x64-mingw32
@@ -63,12 +65,12 @@ PLATFORMS
 DEPENDENCIES
   dxruby (~> 1.4)
   http (~> 5.0.4)
+  puma
   rack (~> 2.2)
   sinatra (~> 2.1)
   sinatra-contrib (~> 2.1)
   sinatra-reloader (~> 1.0)
   unicorn (~> 6.1)
-  webrick (~> 1.7)
 
 RUBY VERSION
    ruby 3.0.3p157
