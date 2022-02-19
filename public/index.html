@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriedPotato</title>
+    <script src="https://unpkg.com/i18next@21.6.11/dist/umd/i18next.min.js"></script>
+    <script src="https://unpkg.com/i18next-browser-languagedetector/i18nextBrowserLanguageDetector.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Nanum+Gothic&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      p {
+        text-align: center;
+      }
+
+      a {
+        text-decoration: none;
+        color: #0074D9;
+        position: relative;
+      }
+
+      .locale {
+        position: relative;
+      }
+
+      a::before,
+      .locale::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 0;
+        height: 2px;
+        background-color: currentColor;
+        transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+
+        a:hover::before,
+        .locale:not(.selected):hover::before {
+          left: 0;
+          right: auto;
+          width: 100%;
+        }
+      }
+
+      body {
+        font-family: "Poppins", "M PLUS Rounded 1c", "Nanum Gothic", "FZZhunYuan-M02S", "YouYuan", "GenSenRounded-R", sans-serif;
+        background: rgb(236, 225, 209);
+        background: linear-gradient(160deg, rgba(236, 225, 209, 1) 0%, rgba(213, 184, 142, 1) 47%, rgba(196, 148, 95, 1) 100%);
+        color: #4b251a;
+      }
+
+      :lang(zh-CN) {
+        font-family: "Poppins", "FZZhunYuan-M02S", "YouYuan", "M PLUS Rounded 1c", sans-serif;
+      }
+
+      :lang(zh-TW) {
+        font-family: "Poppins", "M PLUS Rounded 1c", "GenSenRounded-R", "FZZhunYuan-M02S", sans-serif;
+      }
+
+      :lang(ja) {
+        font-family: "Poppins", "M PLUS Rounded 1c", "FZZhunYuan-M02S", sans-serif;
+      }
+
+      :lang(ko) {
+        font-family: "Poppins", "Nanum Gothic", "M PLUS Rounded 1c", "FZZhunYuan-M02S", sans-serif;
+      }
+
+      main {
+        max-width: 1024px;
+
+        margin: 1em auto;
+        padding: 1em 2.5em;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        border-radius: 0.5em;
+
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(5px);
+
+      }
+
+      .address-box {
+        flex-grow: 0;
+        flex-shrink: 1;
+
+        gap: 0.6em;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 1rem;
+        border: 1px solid #aaa;
+        border-radius: 0.25em;
+        padding: 0.5rem;
+      }
+
+      .test-server {
+        padding: 0.3rem;
+        border: 1px solid #aaa;
+        margin: 0.2rem;
+        border-radius: 0.25em;
+      }
+
+      .address-box button {
+        appearance: none;
+        border: none;
+        background: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .address-box button:hover {
+        filter: brightness(1.5);
+      }
+
+      h1 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+      }
+
+      p,
+      ul {
+        margin: 0.5em;
+      }
+
+      .locales-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2em;
+      }
+
+      /* #locales .locale + .locale::before {
+        content: '|';
+        font-weight: normal;
+        margin: 0 0.25em;
+      } */
+
+      .locale.selected {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>FriedPotato</h1>
+
+      <div class="locales-container">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="1.5em" height="1.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256">
+          <path fill="currentColor" d="m225.9 163.2l.3-1a103.7 103.7 0 0 0 0-68.4l-.3-1A104.4 104.4 0 0 0 128 24a104.2 104.2 0 0 0-97.9 68.8l-.3 1a103.7 103.7 0 0 0 0 68.4l.3 1A104.2 104.2 0 0 0 128 232a104.2 104.2 0 0 0 97.9-68.8ZM102.5 168h51a108.6 108.6 0 0 1-25.5 42.4a108.6 108.6 0 0 1-25.5-42.4Zm-4.2-16a126.4 126.4 0 0 1 0-48h59.4a127.6 127.6 0 0 1 2.3 24a126.8 126.8 0 0 1-2.3 24ZM40 128a90.3 90.3 0 0 1 3.3-24H82a145 145 0 0 0 0 48H43.3a90.3 90.3 0 0 1-3.3-24Zm113.5-40h-51A108.6 108.6 0 0 1 128 45.6A108.6 108.6 0 0 1 153.5 88Zm20.5 16h38.7a88.9 88.9 0 0 1 0 48H174a145 145 0 0 0 0-48Zm32.4-16h-36a128.7 128.7 0 0 0-24.1-46.1A88.6 88.6 0 0 1 206.4 88Zm-96.7-46.1A128.7 128.7 0 0 0 85.6 88h-36a88.6 88.6 0 0 1 60.1-46.1ZM49.6 168h36a128.7 128.7 0 0 0 24.1 46.1A88.3 88.3 0 0 1 49.6 168Zm96.7 46.1a128.7 128.7 0 0 0 24.1-46.1h36a88.3 88.3 0 0 1-60.1 46.1Z"></path>
+        </svg>
+
+        <div id="locales"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="1.5em" height="1.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256">
+          <path fill="currentColor" d="m225.9 163.2l.3-1a103.7 103.7 0 0 0 0-68.4l-.3-1A104.4 104.4 0 0 0 128 24a104.2 104.2 0 0 0-97.9 68.8l-.3 1a103.7 103.7 0 0 0 0 68.4l.3 1A104.2 104.2 0 0 0 128 232a104.2 104.2 0 0 0 97.9-68.8ZM102.5 168h51a108.6 108.6 0 0 1-25.5 42.4a108.6 108.6 0 0 1-25.5-42.4Zm-4.2-16a126.4 126.4 0 0 1 0-48h59.4a127.6 127.6 0 0 1 2.3 24a126.8 126.8 0 0 1-2.3 24ZM40 128a90.3 90.3 0 0 1 3.3-24H82a145 145 0 0 0 0 48H43.3a90.3 90.3 0 0 1-3.3-24Zm113.5-40h-51A108.6 108.6 0 0 1 128 45.6A108.6 108.6 0 0 1 153.5 88Zm20.5 16h38.7a88.9 88.9 0 0 1 0 48H174a145 145 0 0 0 0-48Zm32.4-16h-36a128.7 128.7 0 0 0-24.1-46.1A88.6 88.6 0 0 1 206.4 88Zm-96.7-46.1A128.7 128.7 0 0 0 85.6 88h-36a88.6 88.6 0 0 1 60.1-46.1ZM49.6 168h36a128.7 128.7 0 0 0 24.1 46.1A88.3 88.3 0 0 1 49.6 168Zm96.7 46.1a128.7 128.7 0 0 0 24.1-46.1h36a88.3 88.3 0 0 1-60.1 46.1Z"></path>
+        </svg>
+      </div>
+
+      <h2 id="address"></h2>
+
+      <p id="add-address"></p>
+      <div class="address-box">
+        <span id="server-address"></span>
+        <button id="copy-button">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ion" width="1.5em" height="1.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 512 512">
+            <path d="M352 115h90c3.3 0 6-2.7 6-6 0-8.2-3.7-16-10-21.3l-77.1-64.2c-4.9-4.1-14.2-7.4-20.6-7.4-4.1 0-7.4 3.3-7.4 7.4V96c.1 10.5 8.6 19 19.1 19z" fill="currentColor"></path>
+            <path d="M307 96V16H176c-17.6 0-32 14.4-32 32v336c0 17.6 14.4 32 32 32h240c17.6 0 32-14.4 32-32V141h-96c-24.8 0-45-20.2-45-45z" fill="currentColor"></path>
+            <path d="M116 412V80H96c-17.6 0-32 14.4-32 32v352c0 17.6 14.4 32 32 32h256c17.6 0 32-14.4 32-32v-20H148c-17.6 0-32-14.4-32-32z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </div>
+
+      <p id="test-server-description"></p>
+
+      <span class="test-server"></span>
+
+      <h2 id="features"></h2>
+      <p id="features-description"></p>
+
+      <ul>
+        <li id="modified-engine"></li>
+        <ul>
+          <li id="real-judgement"></li>
+          <li id="real-combo"></li>
+          <li id="flick-arrow"></li>
+          <li id="flashing-slide"></li>
+          <li id="auto-play"></li>
+        </ul>
+        <li id="auto-background"></li>
+        <li id="classic-score"></li>
+      </ul>
+
+      <h2 id="links"></h2>
+      <a href="https://github.com/sevenc-nanashi/FriedPotato">Github</a>
+    </main>
+
+
+    <script defer>
+      const locales = {
+        ja: '日本語',
+        en: 'English',
+        'zh-CN': '简体中文',
+        'zh-TW': '繁體中文',
+        ko: '한국어'
+      }
+
+      i18next
+        .use(i18nextBrowserLanguageDetector)
+        .init({
+          fallbackLng: 'en',
+          resources: {
+            ja: {
+              translation: {
+                address: 'アドレス',
+                features: '機能',
+                links: 'リンク',
+                addAddress: '以下のアドレスを {{- sonolus}} に追加してください。',
+                testServerDescription: 'またテストサーバーを以下のアドレスからからアクセスこともできます。',
+                featuresDescription: 'FriedPotato とは、以下の機能が備わっている {{- sweetpotato}} プロキシサーバーです。',
+                feature: {
+                  modifiedEngine: 'よりプロセカに近づいた改造エンジン',
+                  realJudgement: 'リアルな判定エフェクト',
+                  realCombo: 'リアルなコンボ数表示',
+                  flickArrow: '動くフリック',
+                  flashingSlide: 'スライドの点滅',
+                  autoPlay: 'オートプレイの表示（設定から変更可能）',
+                  autoBackground: 'ジャケットから背景の自動生成',
+                  classicScore: 'クラシックエンジンの旧譜面の変換'
+                }
+              }
+            },
+            en: {
+              translation: {
+                address: 'Address',
+                features: 'Features',
+                links: 'Links',
+                addAddress: 'Add the following address to {{- sonolus}} to start using FriedPotato.',
+                testServerDescription: 'You can also connect to test server via the following address.',
+                featuresDescription: 'FriedPotato is a proxy server of {{- sweetpotato}} which adds the following features:',
+                feature: {
+                  modifiedEngine: 'Be able to play with new engine',
+                  realJudgement: 'Realistic judgement effect',
+                  realCombo: 'Realistic combo display',
+                  flickArrow: 'Animated flick arrows',
+                  flashingSlide: 'Flashing slides',
+                  autoPlay: 'Auto-play display (Optional)',
+                  autoBackground: 'Auto-generated background with jackets',
+                  classicScore: 'Be able to play old levels with classic engine'
+                }
+              }
+            },
+            'zh-CN': {
+              translation: {
+                address: '地址',
+                features: '功能',
+                links: '链接',
+                addAddress: '请将以下的地址添加到 {{- sonolus}} 以便使用 FriedPotato。',
+                testServerDescription: '您也可以通过以下的地址连接到譜面测试服务器。',
+                featuresDescription: 'FriedPotato 是基于 {{- sweetpotato}} 的代理服务器，并添加了以下功能：',
+                feature: {
+                  modifiedEngine: '使用新的改造引擎',
+                  realJudgement: '真实的判定效果',
+                  realCombo: '真实的连击数显示',
+                  flickArrow: '划键箭头动画',
+                  flashingSlide: '闪烁的长条',
+                  autoPlay: '自动模式播放显示（可选）',
+                  autoBackground: '自动生成背景图片',
+                  classicScore: '能够使用旧引擎制作的的谱面'
+                }
+              }
+            },
+            'zh-TW': {
+              translation: {
+                address: '地址',
+                features: '功能',
+                links: '連結',
+                addAddress: '請將以下的地址添加到 {{- sonolus}} 以便使用 FriedPotato。',
+                testServerDescription: '您也可以通過以下的地址連接到譜面測試服務器。',
+                featuresDescription: 'FriedPotato 是基於 {{- sweetpotato}} 的代理服務器，並添加了以下功能：',
+                feature: {
+                  modifiedEngine: '使用新的改造引擎',
+                  realJudgement: '真實的判定效果',
+                  realCombo: '真實的連擊數顯示',
+                  flickArrow: '劃鍵箭頭動畫',
+                  flashingSlide: '閃爍的長條',
+                  autoPlay: '自動模式播放顯示（可選）',
+                  autoBackground: '自動生成背景圖片',
+                  classicScore: '能夠使用舊引擎製作的譜面'
+                }
+              }
+            },
+            ko: {
+              translation: {
+                address: '주소',
+                features: '기능',
+                links: '링크',
+                addAddress: '아래의 주소를 {{- sonolus}} 에 추가하여 FriedPotato 을 사용하십시오.',
+                testServerDescription: '또한 테스트 서버를 다음 주소를 통해 연결할 수 있습니다.',
+                featuresDescription: 'FriedPotato 는 다음 기능을 추가하는 {{- sweetpotato}} 의 프록시 서버입니다.',
+                feature: {
+                  modifiedEngine: '새로운 엔진으로 게임을 할 수 있습니다.',
+                  realJudgement: '실제 판정 효과',
+                  realCombo: '실제 콤보 표시',
+                  flickArrow: '플릭 애니메이션',
+                  flashingSlide: '반짝이는 슬라이드',
+                  autoPlay: ' 오토플레이 표시 (선택사항)',
+                  autoBackground: '자동으로 배경 생성',
+                  classicScore: '옛 엔진으의 채보를 플레이할 수 있습니다.'
+                }
+              }
+            }
+          }
+        })
+
+      // Add locale switcher
+      Object.entries(locales).forEach(([key, value], ind) => {
+        const localeSwitcher = document.querySelector('#locales')
+        if (ind !== 0) {
+          const divider = document.createElement('span')
+          divider.classList.add('divider')
+          divider.innerText = '|'
+          divider.style = 'margin: 0 0.25em;'
+          localeSwitcher.appendChild(divider)
+        }
+        const span = document.createElement('span')
+        span.id = 'locale-' + key
+        span.lang = key
+        span.textContent = value
+        span.classList.add('locale')
+        span.addEventListener('click', () => {
+          i18next.changeLanguage(key)
+        })
+        localeSwitcher.appendChild(span)
+      })
+
+      function onLanguageChanged(lng) {
+        document.documentElement.setAttribute('lang', lng)
+
+        document.querySelectorAll('.locale').forEach(span => {
+          span.classList.remove('selected')
+          if (span.id === 'locale-' + lng) {
+            span.classList.add('selected')
+          }
+        })
+        document.querySelector('#address').innerHTML = i18next.t('address')
+        document.querySelector('#features').textContent = i18next.t('features')
+        document.querySelector('#links').textContent = i18next.t('links')
+        document.querySelector('#add-address').innerHTML = i18next.t('addAddress', {
+          sonolus: `<a href="https://sonolus.com/" target="_blank">Sonolus</a>`
+        }, {
+          interpolation: {
+            escapeValue: false
+          }
+        })
+        document.querySelector('#features-description').innerHTML = i18next.t('featuresDescription', {
+          sweetpotato: `<a href="https://sweet-potato.dev/" target="_blank">SweetPotato</a>`
+        }, {
+          interpolation: {
+            escapeValue: false
+          }
+        })
+        document.querySelector('#test-server-description').innerHTML = i18next.t('testServerDescription')
+        document.querySelector('#modified-engine').textContent = i18next.t('feature.modifiedEngine')
+        document.querySelector('#real-judgement').textContent = i18next.t('feature.realJudgement')
+        document.querySelector('#real-combo').textContent = i18next.t('feature.realCombo')
+        document.querySelector('#flick-arrow').textContent = i18next.t('feature.flickArrow')
+        document.querySelector('#flashing-slide').textContent = i18next.t('feature.flashingSlide')
+        document.querySelector('#auto-play').textContent = i18next.t('feature.autoPlay')
+        document.querySelector('#auto-background').textContent = i18next.t('feature.autoBackground')
+        document.querySelector('#classic-score').textContent = i18next.t('feature.classicScore')
+      }
+
+      i18next.on('languageChanged', onLanguageChanged)
+
+      document.documentElement.lang = i18next.language
+      window.addEventListener('DOMContentLoaded', () => {
+        onLanguageChanged(i18next.language)
+      })
+
+      // initialize address box
+      document.querySelector('#server-address').innerHTML = window.location.href
+      document.querySelectorAll('.test-server').forEach((el) => {
+        el.textContent = window.location.href + 'test/<your-test-server-id>'
+      })
+      document.querySelector('#copy-button').addEventListener('click', () => {
+        const textarea = document.createElement('textarea')
+        textarea.value = window.location.href
+        textarea.style.position = 'fixed'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        textarea.remove()
+      })
+    </script>
+  </body>
+</html>
