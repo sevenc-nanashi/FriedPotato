@@ -6,7 +6,7 @@
     "engine": {
       "name": "message",
       "version": 4,
-      "title": "",
+      "title": "（メッセージ）",
       "subtitle": "（メッセージ用）",
       "author": "名無し｡",
       "skin": {
@@ -130,7 +130,7 @@
     "author": "by 名無し｡",
     "cover": {
       "type": "LevelCover",
-      "url": "https://cdn.discordapp.com/attachments/756477702030098513/897734492414951424/trans.png"
+      "url": "https://cdn.discordapp.com/attachments/939861558199197706/944402217262284850/white.apng"
     },
     "bgm": {
       "type": "LevelBgm",
@@ -148,7 +148,7 @@
     "engine": {
       "name": "message",
       "version": 4,
-      "title": "",
+      "title": "（メッセージ）",
       "subtitle": "（メッセージ用）",
       "author": "名無し｡",
       "skin": {
