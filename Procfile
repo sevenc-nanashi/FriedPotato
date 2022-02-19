@@ -1,1 +1,1 @@
-web: unicorn main.rb
+web: unicorn
