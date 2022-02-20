@@ -110,5 +110,4 @@ def generate(name: str):
 
     return {"status": "ok"}
 
-
-app.run(port=int(sys.argv[1]), debug=True)
+app.run(port=int(sys.argv[1]))
