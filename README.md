@@ -1,7 +1,7 @@
 # FriedPotato：プロセカ創作譜面サーバー
 
-https://potato.purplepalette.net に少しだけ機能を追加したサーバー。
-https://fp.sevenc7c.com から遊ぶことが出来ます。
+https://potato.purplepalette.net に少しだけ機能を追加したサーバー。  
+https://fp.sevenc7c.com から遊ぶことが出来ます。  
 また、 https://fp.sevenc7c.com/tests/テストサーバーID でテストサーバーに接続できます。
 
 ## 追加機能
