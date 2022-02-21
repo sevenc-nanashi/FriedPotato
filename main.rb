@@ -56,7 +56,7 @@ def modify_level!(level, extra)
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
                      url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
         data: { type: "EffectData",
-                hash: "17eb8ab357ad216d05e68a2752847ef4280252b3",
+                hash: Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb")),
                 url: "/repo/seconfig.gz" },
       },
       particle: {
