@@ -437,7 +437,7 @@ get "/levels/list" do
   ppdata = JSON.parse(
     HTTP.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
-  if params[:keywords] == ""
+  if params[:keywords].nil? or params[:keywords].empty?
     if ppdata[:items].length == 0
       levels = JSON.parse(
         HTTP.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
