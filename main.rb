@@ -789,7 +789,7 @@ end
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   cfg = [[?t, $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
   key = "#{hash}-#{cfg}"
-  next send_file File.read("./dist/modify/#{key}.gz", mode: "rb") if File.exists?("./dist/modify/#{key}.gz")
+  next send_file "./dist/modify/#{key}.gz" if File.exists?("./dist/modify/#{key}.gz")
   raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
   gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
