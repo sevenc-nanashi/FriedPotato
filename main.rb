@@ -21,6 +21,12 @@ def python_started?
   end
 end
 
+$hash_cache = {}
+
+def get_file_hash(path)
+  $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
+end
+
 def modify_level!(level, extra)
   name = level[:name]
   if level[:engine][:name] == "wbp-pjsekai"
@@ -56,7 +62,7 @@ def modify_level!(level, extra)
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
                      url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
         data: { type: "EffectData",
-                hash: Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb")),
+                hash: get_file_hash("./public/repo/seconfig.gz"),
                 url: "/repo/seconfig.gz" },
       },
       particle: {
@@ -93,7 +99,7 @@ def modify_level!(level, extra)
     }
     level[:data][:url] = "/convert/#{level[:name]}"
     level[:data].delete(:hash)
-    level[:data][:hash] = Digest::SHA256.hexdigest(File.read("./convert/#{level[:name]}.gz")) if File.exists?("./convert/#{level[:name]}.gz")
+    level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exists?("./convert/#{level[:name]}.gz")
   elsif level[:engine][:name] == "psekai"
     level[:data][:url] = "/convert/l_#{level[:name]}"
     level[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
@@ -110,7 +116,7 @@ def modify_level!(level, extra)
   else
     level[:data][:url] = "/modify/#{level[:name]}-#{level[:data][:hash]}"
     if File.exists?("dist/modify/#{level[:data][:hash]}.gz")
-      level[:data][:hash] = Digest::SHA1.hexdigest(File.read("dist/modify/#{level[:data][:hash]}.gz", mode: "rb"))
+      level[:data][:hash] = get_file_hash("dist/modify/#{level[:data][:hash]}.gz")
     else
       level[:data].delete(:hash)
     end
@@ -124,46 +130,38 @@ def modify_level!(level, extra)
   if Dir.exist?("./overrides/#{name}")
     if File.exist?("./overrides/#{name}/thumbnail.png")
       level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
-      level[:cover][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/thumbnail.png"))
+      level[:cover][:hash] = get_file_hash("./overrides/#{name}/thumbnail.png")
     end
     if File.exist?("./overrides/#{name}/bgm.mp3")
       level[:bgm][:url] = "/overrides/#{name}/bgm.mp3"
-      level[:bgm][:hash] = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/bgm.mp3"))
+      level[:bgm][:hash] = get_file_hash("./overrides/#{name}/bgm.mp3")
     end
     if File.exist?("./overrides/#{name}/data.json")
-      json_hash = Digest::SHA256.hexdigest(File.read("./overrides/#{name}/data.json"))
+      json_hash = get_file_hash("./overrides/#{name}/data.json")
       Zlib::GzipWriter.open("./dist/data-overrides/#{json_hash}.gz") do |gz|
         gz.write(File.read("./overrides/#{name}/data.json"))
       end
       level[:data][:url] = "/data-overrides/#{json_hash}.gz"
-      level[:data][:hash] = Digest::SHA256.hexdigest(File.read("./dist/data-overrides/#{json_hash}.gz"))
+      level[:data][:hash] = get_file_hash("./dist/data-overrides/#{json_hash}.gz")
     end
   end
   if Dir.exist?($config.engine_path)
     level[:engine][:data][:url] = "/engine/data"
-    level[:engine][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read($config.engine_path + "/dist/EngineData", mode: "rb")
-    )
+    level[:engine][:data][:hash] = get_file_hash($config.engine_path + "/dist/EngineData")
     level[:engine][:configuration][:url] = "/engine/configuration"
-    level[:engine][:configuration][:hash] = Digest::SHA256.hexdigest(
-      File.read($config.engine_path + "/dist/EngineConfiguration", mode: "rb")
-    )
+    level[:engine][:configuration][:hash] = get_file_hash($config.engine_path + "/dist/EngineConfiguration")
   end
   level[:engine][:skin][:name] = "pjsekai.extended"
   level[:engine][:skin][:data][:url] = "/skin/data"
-  skin_data_hash = Digest::SHA1.hexdigest(File.read("./skin/data.json"))
+  skin_data_hash = get_file_hash("./skin/data.json")
   if File.exist?("./dist/skin/#{skin_data_hash}.gz")
-    level[:engine][:skin][:data][:hash] = Digest::SHA256.hexdigest(
-      File.read("./dist/skin/#{skin_data_hash}.gz")
-    )
+    level[:engine][:skin][:data][:hash] = get_file_hash("./dist/skin/#{skin_data_hash}.gz")
   else
     level[:engine][:skin][:data].delete(:hash)
   end
 
   level[:engine][:skin][:texture][:url] = "/skin/texture"
-  level[:engine][:skin][:texture][:hash] = Digest::SHA256.hexdigest(
-    File.read("./skin/texture.png", mode: "rb")
-  )
+  level[:engine][:skin][:texture][:hash] = get_file_hash("./skin/texture.png")
 
   level[:engine][:background] = {
     name: level[:name],
@@ -177,7 +175,7 @@ def modify_level!(level, extra)
     },
     data: {
       type: :BackgroundData,
-      hash: Digest::SHA1.hexdigest(File.read("./public/repo/data.gz", mode: "rb")),
+      hash: get_file_hash("./public/repo/data.gz"),
       url: "/repo/data.gz",
     },
     image: {
@@ -186,15 +184,15 @@ def modify_level!(level, extra)
     },
     configuration: {
       type: :BackgroundConfiguration,
-      hash: Digest::SHA1.hexdigest(File.read("./public/repo/config.gz", mode: "rb")),
+      hash: get_file_hash("./public/repo/config.gz"),
       url: "/repo/config.gz",
     },
   }
   level[:engine][:effect][:name] = "pjsekai.fixed"
   level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
-  level[:engine][:effect][:data][:hash] = Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb"))
+  level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/seconfig.gz")
   if File.exists?("dist/bg/#{img_name}.png")
-    level[:engine][:background][:image][:hash] = Digest::SHA1.hexdigest(File.read("dist/bg/#{level[:name]}.png", mode: "rb"))
+    level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:name]}.png")
   end
 end
 
@@ -488,7 +486,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       subtitle: "-",
       cover: {
         type: :LevelCover,
-        hash: Digest::SHA1.hexdigest(File.read("./public/repo/extra_#{extra ? "off" : "on"}.png", mode: "rb")),
+        hash: get_file_hash("./public/repo/extra_#{extra ? "off" : "on"}.png"),
         url: "/repo/extra_#{extra ? "off" : "on"}.png",
       },
       data: {
@@ -506,7 +504,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       subtitle: "-",
       cover: {
         type: :LevelCover,
-        hash: Digest::SHA1.hexdigest(File.read("./public/repo/delete.png", mode: "rb")),
+        hash: get_file_hash("./public/repo/delete.png"),
         url: "/repo/delete.png",
       },
       data: {
@@ -525,7 +523,7 @@ get "/effects/pjsekai.fixed" do
     "item": {
       "author": "Sonolus",
       "data": {
-        "hash": Digest::SHA1.hexdigest(File.read("./public/repo/seconfig.gz", mode: "rb")),
+        "hash": get_file_hash("./public/repo/seconfig.gz"),
         "type": "EffectData",
         "url": "/repo/seconfig.gz",
       },
@@ -544,7 +542,7 @@ get "/effects/pjsekai.fixed" do
 end
 
 get %r{(?:/tests/.+)?/convert/(.+)} do |name|
-  next File.read("./dist/conv/#{name}.gz", mode: "rb") if File.exists?("./dist/conv/#{name}.gz")
+  next File.read("./dist/conv/#{name}.gz") if File.exists?("./dist/conv/#{name}.gz")
   if name.start_with?("l_")
     raw = HTTP.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
   else
@@ -709,7 +707,7 @@ get %r{(?:/tests/([^/]+))?/skin/texture} do |name|
 end
 
 get %r{(?:/tests/([^/]+))?/skin/data} do |name|
-  hash = Digest::SHA1.hexdigest(File.read("./skin/data.json", mode: "rb"))
+  hash = get_file_hash("./skin/data.json")
   unless File.exist?("./dist/skin/#{hash}.gz")
     Zlib::GzipWriter.open("./dist/skin/#{hash}.gz") do |gz|
       gz.write(File.read("./skin/data.json", mode: "rb"))
@@ -791,7 +789,7 @@ end
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   cfg = [[?t, $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
   key = "#{hash}-#{cfg}"
-  next File.read("./dist/modify/#{key}.gz", mode: "rb") if File.exists?("./dist/modify/#{key}.gz")
+  next send_file File.read("./dist/modify/#{key}.gz", mode: "rb") if File.exists?("./dist/modify/#{key}.gz")
   raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
   gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
