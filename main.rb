@@ -542,7 +542,7 @@ get "/effects/pjsekai.fixed" do
 end
 
 get %r{(?:/tests/.+)?/convert/(.+)} do |name|
-  next File.read("./dist/conv/#{name}.gz") if File.exists?("./dist/conv/#{name}.gz")
+  next send_file "./dist/conv/#{name}.gz" if File.exists?("./dist/conv/#{name}.gz")
   if name.start_with?("l_")
     raw = HTTP.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
   else
