@@ -731,19 +731,16 @@ get "/skins/list" do
         {
           "author": "Sonolus",
           "data": {
-              "hash": "b72c09be74ee2e67692a68b814c473462bc5b352ac8c94bd87b9089cde704d37",
               "type": "SkinData",
               "url": "/skin/data"
           },
           "name": "pjsekai.extended",
           "subtitle": "Project Sekai: Colorful Stage!",
           "texture": {
-              "hash": "f5d2808b2473e60dbfc9fef8167a93d1d7e0fcf9989b04960ca52137774db980",
               "type": "SkinTexture",
               "url": "/skin/texture"
           },
           "thumbnail": {
-              "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
               "type": "SkinThumbnail",
               "url": "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
           },
@@ -761,14 +758,12 @@ get "/skins/pjsekai.extended" do
       "item": {
         "author": "Sonolus",
         "data": {
-            "hash": "b72c09be74ee2e67692a68b814c473462bc5b352ac8c94bd87b9089cde704d37",
             "type": "SkinData",
             "url": "/skin/data"
         },
         "name": "pjsekai.extended",
         "subtitle": "Project Sekai: Colorful Stage!",
         "texture": {
-            "hash": "f5d2808b2473e60dbfc9fef8167a93d1d7e0fcf9989b04960ca52137774db980",
             "type": "SkinTexture",
             "url": "/skin/texture"
         },
