@@ -283,14 +283,6 @@ set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
   set :port, ENV["PORT"]
-  FileUtils.cp("./config.production.yml", "./config.yml")
-  FileUtils.mkdir_p("engine/dist")
-  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862143063826442/EngineData").body.then do |body|
-    File.write("engine/dist/EngineData", body, mode: "wb")
-  end
-  HTTP.get("https://cdn.discordapp.com/attachments/939861558199197706/943862142904434688/EngineConfiguration").body.then do |body|
-    File.write("engine/dist/EngineConfiguration", body, mode: "wb")
-  end
 else
   set :port, $config.port
 end
