@@ -2,7 +2,6 @@ require "json"
 require "uri"
 require "sinatra"
 require "fileutils"
-require "sinatra/reloader"
 require "sinatra/json"
 require "http"
 require "digest"
@@ -29,6 +28,7 @@ end
 
 def modify_level!(level, extra)
   name = level[:name]
+  modifier = ""
   if level[:engine][:name] == "wbp-pjsekai"
     level[:engine] = {
       name: "pjsekai",
@@ -124,6 +124,7 @@ def modify_level!(level, extra)
   img_name = level[:name].dup
   if extra
     img_name += ".extra"
+    modifier += "e"
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
@@ -180,7 +181,7 @@ def modify_level!(level, extra)
     },
     image: {
       type: :BackgroundImage,
-      url: "/generate/#{img_name}",
+      url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-#{modifier}",
     },
     configuration: {
       type: :BackgroundConfiguration,
@@ -191,8 +192,8 @@ def modify_level!(level, extra)
   level[:engine][:effect][:name] = "pjsekai.fixed"
   level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/seconfig.gz")
-  if File.exists?("dist/bg/#{img_name}.png")
-    level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:name]}.png")
+  if File.exists?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+    level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
   end
 end
 
@@ -230,6 +231,10 @@ class Config
     python_port: {
       description: "Pythonのポート番号。",
       default: 4568,
+    },
+    public: {
+      description: "公開サーバーモードで起動するか。",
+      default: false,
     },
   }
 
@@ -278,7 +283,11 @@ class Config
 end
 
 $config = Config.new
-
+if ENV["DOCKER"] == "true"
+  $config.background_engine = "docker"
+  $config.public = true if ENV["PUBLIC"] == "true"
+  $config.engine_path = "./engine"
+end
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
@@ -346,7 +355,7 @@ get "/backgrounds/list" do
         },
         image: {
           type: :BackgroundImage,
-          url: "/generate/#{level[:name]}",
+          url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-",
         },
         configuration: {
           type: :BackgroundConfiguration,
@@ -379,7 +388,7 @@ get "/backgrounds/:name" do |name|
       },
       image: {
         type: :BackgroundImage,
-        url: "/generate/#{level[:name]}",
+        url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-",
       },
       configuration: {
         type: :BackgroundConfiguration,
@@ -389,8 +398,9 @@ get "/backgrounds/:name" do |name|
   })
 end
 
-get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
-  unless File.exists?("dist/bg/#{name}.png")
+get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
+  modifier = key.split("-")[1] || ""
+  unless File.exists?("dist/bg/#{key}.png")
     case $config.background_engine
     when "dxruby"
       $current = name
@@ -399,13 +409,13 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
       unless python_started?
         Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py #{$config.python_port}")
       end
-      HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}")
-    when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name.split(".")[0]}?extra=#{name.include?(".extra")}").then do |res|
+      HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}")
+    when "web", "docker"
+      HTTP.post("#{$config.background_engine == "web" ? "https://image-gen.sevenc7c.com" : "http://bg_server:8000"}/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
         if res.status == 200
-          File.write("dist/bg/#{name}.png", res.body, mode: "wb")
+          File.write("dist/bg/#{key}.png", res.body, mode: "wb")
         else
-          if name.include?(".extra")
+          if modifier.include?("e")
             redirect "/repo/background-base-extra.png"
           else
             redirect "/repo/background-base.png"
@@ -413,14 +423,14 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)} do |name|
         end
       end
     when "none"
-      if name.include?(".extra")
+      if modifier.include?("e")
         redirect "/repo/background-base-extra.png"
       else
         redirect "/repo/background-base.png"
       end
     end
   end
-  send_file "dist/bg/#{name}.png"
+  send_file "dist/bg/#{key}.png"
 end
 
 get "/levels/list" do
@@ -488,7 +498,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       engine: {},
     },
   ]
-  if File.exists?("dist/bg/#{level[:name]}.png")
+  if File.exists?("dist/bg/#{level[:name]}.png") && !$config.public
     level_hash[:recommended] << {
       name: level[:name] + ".delete-cache",
       version: 2,
@@ -814,21 +824,23 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   end
   send_file "./dist/modify/#{key}.gz"
 end
-
-ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address
-puts <<~EOS.strip
-       \e[91m+---------------------------------------------+\e[m
-       \e[91m|            FriedPotatoへようこそ！          |\e[m
-       \e[91m+---------------------------------------------+\e[m
-
-       Sonolusを開き、サーバーのURLに以下を入力して下さい：
-         \e[97mhttp://#{ip}:#{$config.port}\e[m
-       テストサーバーの場合は以下のURLを入力して下さい：
-         \e[97mhttp://#{ip}:#{$config.port}/tests/\e[m<テストサーバーID>
-
-
-       \e[97mCtrl+C\e[m を押すと終了します。
-
-       Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
-     EOS
-puts
+unless $config.public
+  require "sinatra/reloader"
+  ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address
+  puts <<~EOS.strip
+         \e[91m+---------------------------------------------+\e[m
+         \e[91m|            FriedPotatoへようこそ！          |\e[m
+         \e[91m+---------------------------------------------+\e[m
+         
+         Sonolusを開き、サーバーのURLに以下を入力して下さい：
+           \e[97mhttp://#{ip}:#{$config.port}\e[m
+         テストサーバーの場合は以下のURLを入力して下さい：
+           \e[97mhttp://#{ip}:#{$config.port}/tests/\e[m<テストサーバーID>
+ 
+ 
+         \e[97mCtrl+C\e[m を押すと終了します。
+ 
+         Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
+       EOS
+  puts
+end

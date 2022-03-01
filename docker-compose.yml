@@ -1,0 +1,14 @@
+version: '3'
+services:
+  main:
+    build: .
+    ports:
+      - "${RUBY_PORT:?}:4567"
+    environment:
+      - DOCKER=true
+      - PORT=4567
+      - PUBLIC=$PUBLIC
+  bg_server:
+    build: bg_server
+    environment:
+      - PORT=8000

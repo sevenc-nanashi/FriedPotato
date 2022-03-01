@@ -1,0 +1,4 @@
+[submodule "SP-imgserver"]
+	path = bg_server
+	url = git@github.com:sevenc-nanashi/SP-imgserver
+	branch = main

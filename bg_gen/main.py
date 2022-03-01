@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageOps
 from io import BytesIO
 import requests
-from flask import Flask
+from flask import Flask, request
 import sys
 
 dir = os.path.dirname(__file__)
@@ -106,7 +106,7 @@ def generate(name: str):
     # print(buffer.crop((0, diff, base.width, base.height - diff)).size, mask_img.size)
     res.paste(base.crop((0, diff, base.width, base.height - diff - 1)), (0, 0))
     res.paste(buffer.crop((0, diff, base.width, base.height - diff - 1)), (0, 0), mask=mask_img)
-    res.save(dir + f"/../dist/bg/{name}.png")
+    res.save(dir + f"/../dist/bg/{request.args['key']}.png")
 
     return {"status": "ok"}
 
