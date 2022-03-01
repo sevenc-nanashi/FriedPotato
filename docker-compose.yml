@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.005
+          cpus: "0.005"
   bg_server:
     build: bg_server
     environment:
@@ -19,4 +19,4 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.045
+          cpus: "0.045"
