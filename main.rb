@@ -286,7 +286,7 @@ $config = Config.new
 if ENV["DOCKER"] == "true"
   $config.background_engine = "docker"
   $config.public = true if ENV["PUBLIC"] == "true"
-  $config.engine_path = "./engine"
+  $config.engine_path = "/engine"
 end
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
