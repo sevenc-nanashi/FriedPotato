@@ -8,15 +8,11 @@ services:
       - DOCKER=true
       - PORT=4567
       - PUBLIC=$PUBLIC
-    deploy:
-      resources:
-        limits:
-          cpus: "0.005"
+    cpu_period: 100000
+    cpu_quota: 500
   bg_server:
     build: bg_server
     environment:
       - PORT=8000
-    deploy:
-      resources:
-        limits:
-          cpus: "0.045"
+    cpu_period: 100000
+    cpu_quota: 4500
