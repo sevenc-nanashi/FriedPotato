@@ -284,7 +284,6 @@ end
 
 $config = Config.new
 if ENV["DOCKER"] == "true"
-  $config.background_engine = "docker"
   $config.public = true if ENV["PUBLIC"] == "true"
   $config.engine_path = "/engine"
 end
@@ -410,8 +409,8 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
         Open3.popen2(".venv/Scripts/python.exe ./bg_gen/main.py #{$config.python_port}")
       end
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}")
-    when "web", "docker"
-      HTTP.post("#{$config.background_engine == "web" ? "https://image-gen.sevenc7c.com" : "http://bg_server:8000"}/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
+    when "web"
+      HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
         if res.status == 200
           File.write("dist/bg/#{key}.png", res.body, mode: "wb")
         else
