@@ -1,0 +1,11 @@
+version: '2.4'
+services:
+  main:
+    build: .
+    ports:
+      - "${RUBY_PORT:?}:4567"
+    environment:
+      - DOCKER=true
+      - PORT=4567
+      - PUBLIC=$PUBLIC
+    cpus: 0.1
