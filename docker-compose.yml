@@ -8,9 +8,9 @@ services:
       - DOCKER=true
       - PORT=4567
       - PUBLIC=$PUBLIC
-    cpus: 0.005
+    cpus: 0.01
   bg_server:
     build: bg_server
     environment:
       - PORT=8000
-    cpus: 0.045
+    cpus: 0.04
