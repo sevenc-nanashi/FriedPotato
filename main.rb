@@ -601,8 +601,8 @@ get %r{/official/levels/group-([^\.]+)} do |name|
     .filter { |d| d[:musicId] == name.to_i }
   preview_id = vocals.first[:assetbundleName]
 
-  levels = difficulties.map do |difficulty|
-    vocals.map do |vocal|
+  levels = vocals.map do |vocal|
+    difficulties.reverse.map do |difficulty|
       {
         name: "#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}",
         version: 1,
