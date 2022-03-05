@@ -27,4 +27,4 @@ RUN bundle config with production; \
 COPY --from=build /engine/dist/EngineData engine/dist/EngineData
 COPY --from=build /engine/dist/EngineConfiguration engine/dist/EngineConfiguration
 COPY . .
-CMD ["bundle", "exec", "unicorn", "-l", "0.0.0.0:4567"]
+CMD ["bundle", "exec", "puma"

@@ -1,1 +1,1 @@
-web: unicorn -p $PORT
+web: puma -p $PORT
