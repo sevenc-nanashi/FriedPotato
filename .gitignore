@@ -215,8 +215,8 @@ build-iPhoneSimulator/
 # End of https://www.toptal.com/developers/gitignore/api/ruby,python
 
 # Some generated files
-dist/**/*.png
-dist/**/*.gz
+dist/**/*.*
+!dist/**/.gitkeep
 levels/*
 !levels/.gitkeep
 level_datas/*

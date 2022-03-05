@@ -1,0 +1,3 @@
+[submodule "bg_gen_python"]
+	path = bg_gen_python
+	url = https://github.com/sevenc-nanashi/SP-imgserver

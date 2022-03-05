@@ -11,6 +11,8 @@ if File.exist?("overrides/#{name.delete_suffix(".extra")}/thumbnail.png")
 else
   url = if name.start_with?("l_")
       "https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..].delete_suffix(".extra")}/jacket.jpg"
+    elsif name.start_with?("level-")
+      "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_{id}_rip/jacket_s_{id}.png".gsub("{id}", name[6..].split(".")[0])
     else
       "https://servers.purplepalette.net/repository/#{name.delete_suffix(".extra")}/cover.png"
     end
