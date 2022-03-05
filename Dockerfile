@@ -5,7 +5,7 @@ RUN apt-get update -y && apt-get install -y \
 WORKDIR /
 
 # -- Installations -----------------------------------------------------------
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
+RUN date +'%s.%3N' > /dev/null
 RUN git clone https://github.com/sevenc-nanashi/sonolus-pjsekai-engine-extended.git engine
 
 # -- Compile -----------------------------------------------------------------

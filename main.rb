@@ -111,6 +111,10 @@ def get_file_hash(path)
   $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
 end
 
+def format_artist(level)
+  "作詞：#{level[:lyricist]}  作曲：#{level[:composer]}  編曲：#{level[:arranger]}"
+end
+
 def modify_level!(level, extra, server)
   name = level[:name]
   modifier = ""
@@ -561,7 +565,7 @@ get "/official/levels/list" do
           version: 1,
           rating: level_vocals.length,
           title: level[:title],
-          artists: "#{level[:lyricist]} / #{level[:composer]} / #{level[:arranger]}",
+          artists: format_artist(level),
           cover: {
             type: :LevelCover,
             url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
@@ -594,155 +598,151 @@ get %r{/official/levels/group-([^\.]+)} do |name|
   levels = difficulties.map do |difficulty|
     vocals.map do |vocal|
       {
-        "name": "#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}",
-        "version": 1,
-        "rating": difficulty[:playLevel],
-        "engine": {
-          "name": "pjsekai",
-          "version": 4,
-          "title": "プロセカ",
-          "subtitle": "プロジェクトセカイ カラフルステージ!",
-          "author": "Burrito",
-          "skin": {
-            "name": "pjsekai.classic",
-            "version": 2,
-            "title": "プロセカ",
-            "subtitle": "プロジェクトセカイ カラフルステージ!",
-            "author": "Sonolus",
-            "thumbnail": {
-              "type": "SkinThumbnail",
-              "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
-              "url": "/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289",
+        name: "#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}",
+        version: 1,
+        rating: difficulty[:playLevel],
+        engine: {
+          name: "pjsekai",
+          version: 4,
+          title: "プロセカ",
+          subtitle: "プロジェクトセカイ カラフルステージ!",
+          author: "Burrito",
+          skin: {
+            name: "pjsekai.classic",
+            version: 2,
+            title: "プロセカ",
+            subtitle: "プロジェクトセカイ カラフルステージ!",
+            author: "Sonolus",
+            thumbnail: {
+              type: :SkinThumbnail,
+              hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
+              url: "/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289",
             },
-            "data": {
-              "type": "SkinData",
-              "hash": "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-              "url": "/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
+            data: {
+              type: :SkinData,
+              hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
+              url: "/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
             },
-            "texture": {
-              "type": "SkinTexture",
-              "hash": "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-              "url": "/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-            },
-          },
-          "background": {
-            "name": "pjsekai.live",
-            "version": 2,
-            "title": "Live",
-            "subtitle": "プロジェクトセカイ カラフルステージ!",
-            "author": "Sonolus",
-            "thumbnail": {
-              "type": "BackgroundThumbnail",
-              "hash": "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
-              "url": "/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
-            },
-            "data": {
-              "type": "BackgroundData",
-              "hash": "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
-              "url": "/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
-            },
-            "image": {
-              "type": "BackgroundImage",
-              "hash": "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
-              "url": "/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
-            },
-            "configuration": {
-              "type": "BackgroundConfiguration",
-              "hash": "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
-              "url": "/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7",
+            texture: {
+              type: :SkinTexture,
+              hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
+              url: "/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c",
             },
           },
-          "effect": {
-            "name": "pjsekai.classic",
-            "version": 2,
-            "title": "プロセカ",
-            "subtitle": "プロジェクトセカイ カラフルステージ!",
-            "author": "Sonolus",
-            "thumbnail": {
-              "type": "EffectThumbnail",
-              "hash": "e5f439916eac9bbd316276e20aed999993653560",
-              "url": "/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+          background: {
+            name: "pjsekai.live",
+            version: 2,
+            title: "Live",
+            subtitle: "プロジェクトセカイ カラフルステージ!",
+            author: "Sonolus",
+            thumbnail: {
+              type: :BackgroundThumbnail,
+              hash: "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
+              url: "/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
             },
-            "data": {
-              "type": "EffectData",
-              "hash": "b98f36f0370dd5b4cdaa67d594c203f07bbed055",
-              "url": "/repository/EffectData/b98f36f0370dd5b4cdaa67d594c203f07bbed055",
+            data: {
+              type: :BackgroundData,
+              hash: "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
+              url: "/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
             },
-          },
-          "particle": {
-            "name": "pjsekai.classic",
-            "version": 1,
-            "title": "プロセカ",
-            "subtitle": "プロジェクトセカイ カラフルステージ!",
-            "author": "Sonolus",
-            "thumbnail": {
-              "type": "ParticleThumbnail",
-              "hash": "e5f439916eac9bbd316276e20aed999993653560",
-              "url": "/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+            image: {
+              type: :BackgroundImage,
+              hash: "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
+              url: "/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
             },
-            "data": {
-              "type": "ParticleData",
-              "hash": "f84c5dead70ad62a00217589a73a07e7421818a8",
-              "url": "/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8",
-            },
-            "texture": {
-              "type": "ParticleTexture",
-              "hash": "4850a8f335204108c439def535bcf693c7f8d050",
-              "url": "/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050",
+            configuration: {
+              type: :BackgroundConfiguration,
+              hash: "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
+              url: "/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7",
             },
           },
-          "thumbnail": {
-            "type": "EngineThumbnail",
-            "hash": "e5f439916eac9bbd316276e20aed999993653560",
-            "url": "/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+          effect: {
+            name: "pjsekai.classic",
+            version: 2,
+            title: "プロセカ",
+            subtitle: "プロジェクトセカイ カラフルステージ!",
+            author: "Sonolus",
+            thumbnail: {
+              type: :EffectThumbnail,
+              hash: "e5f439916eac9bbd316276e20aed999993653560",
+              url: "/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+            },
+            data: {
+              type: :EffectData,
+              hash: "b98f36f0370dd5b4cdaa67d594c203f07bbed055",
+              url: "/repository/EffectData/b98f36f0370dd5b4cdaa67d594c203f07bbed055",
+            },
           },
-          "data": {
-            "type": "EngineData",
-            "hash": "201a2a4022c8cd188c922fa5658e4fdc3ab83430",
-            "url": "/repository/EngineData/201a2a4022c8cd188c922fa5658e4fdc3ab83430",
+          particle: {
+            name: "pjsekai.classic",
+            version: 1,
+            title: "プロセカ",
+            subtitle: "プロジェクトセカイ カラフルステージ!",
+            author: "Sonolus",
+            thumbnail: {
+              type: :ParticleThumbnail,
+              hash: "e5f439916eac9bbd316276e20aed999993653560",
+              url: "/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+            },
+            data: {
+              type: :ParticleData,
+              hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
+              url: "/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8",
+            },
+            texture: {
+              type: :ParticleTexture,
+              hash: "4850a8f335204108c439def535bcf693c7f8d050",
+              url: "/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050",
+            },
           },
-          "configuration": {
-            "type": "EngineConfiguration",
-            "hash": "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-            "url": "/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+          thumbnail: {
+            type: :EngineThumbnail,
+            hash: "e5f439916eac9bbd316276e20aed999993653560",
+            url: "/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+          },
+          data: {
+            type: :EngineData,
+            hash: "201a2a4022c8cd188c922fa5658e4fdc3ab83430",
+            url: "/repository/EngineData/201a2a4022c8cd188c922fa5658e4fdc3ab83430",
+          },
+          configuration: {
+            type: :EngineConfiguration,
+            hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+            url: "/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
           },
         },
-        "useSkin": {
-          "useDefault": true,
+        useSkin: {
+          useDefault: true,
         },
-        "useBackground": {
-          "useDefault": true,
+        useBackground: {
+          useDefault: true,
         },
-        "useEffect": {
-          "useDefault": true,
+        useEffect: {
+          useDefault: true,
         },
-        "useParticle": {
-          "useDefault": true,
+        useParticle: {
+          useDefault: true,
         },
-        "title": "#{difficulty[:musicDifficulty].capitalize} - #{vocal[:caption]}",
-        "artists": OFFICIAL_CHARACTERS.filter { |c| vocal[:characters].any? { |vc| vc[:characterId] == c[:id] } }
-          .map { |c| c[:firstName] + " " + c[:givenName] }
-          .join(" & "),
-        "author": "",
-        "cover": {
-          "type": "LevelCover",
-          "hash": "",
-          "url": "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
+        title: "#{difficulty[:musicDifficulty].capitalize} - #{vocal[:caption]}",
+        artists: OFFICIAL_CHARACTERS.filter { |c| vocal[:characters].any? { |vc| vc[:characterId] == c[:id] } }
+          .map { |c| "#{c[:firstName]} #{c[:givenName]}".strip }
+          .join(" & ").then { |s| s.empty? ? "-" : s },
+        author: "",
+        cover: {
+          type: :LevelCover,
+          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
         },
-        "bgm": {
-          "type": "LevelBgm",
-          "hash": "",
-          "url": "https://sekai-res.dnaroma.eu/file/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
+        bgm: {
+          type: :LevelBgm,
+          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
         },
-        "preview": {
-          "type": "LevelPreview",
-          "hash": "",
-          "url": "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+        preview: {
+          type: :LevelPreview,
+          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
         },
-        "data": {
-          "type": "LevelData",
-          "hash": "",
-          "url": "/levels/#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}/data?0.1.0-beta.11",
+        data: {
+          type: :LevelData,
+          url: "/levels/#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}/data?0.1.0-beta.11",
         },
       }.tap { |l| modify_level!(l, false, :official) }
     end
@@ -753,10 +753,12 @@ get %r{/official/levels/group-([^\.]+)} do |name|
       version: 1,
       rating: vocals.length,
       title: level[:title],
-      artists: "#{level[:lyricist]} / #{level[:composer]} / #{level[:arranger]}",
+      artists: format_artist(level),
+      author: "下から難易度を選択して下さい。",
       cover: {
         type: :LevelCover,
-        url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
+        hash: get_file_hash("./public/repo/folder.png"),
+        url: "/repo/folder.png",
       },
       engine: {
         name: "category",
@@ -1152,7 +1154,7 @@ get %r{/(?:tests/(?:[^/]+)|official)/(.+)} do |path|
 end
 
 get %r{/pjsekai/(.+)} do |path|
-  redirect "/official/#{path}", 301
+  redirect "/official/#{path}?#{request.query_string}", 301
 end
 
 unless $config.public
