@@ -8,4 +8,4 @@ services:
       - DOCKER=true
       - PORT=4567
       - PUBLIC=$PUBLIC
-    cpus: 0.1
+    cpus: 0.2

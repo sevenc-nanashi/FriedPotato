@@ -841,7 +841,7 @@ get %r{/official/shift/(.+?)} do |name|
     next if entity[:archetype] < 3
     val = entity[:data][:values]
     val[0] -= 9
-    val[3] -= 9 if val[3]
+    val[3] -= 9 if [9, 16].include?(entity[:archetype])
   end
   Zlib::GzipWriter.open("./dist/modify/#{name}.gz") do |gz|
     gz.write(JSON.dump(level_data))
