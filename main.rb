@@ -87,6 +87,12 @@ class Config
   end
 end
 
+class Integer
+  def zfill(length)
+    self.to_s.rjust(length, "0")
+  end
+end
+
 $config = Config.new
 
 def python_started?
@@ -551,13 +557,13 @@ end
 
 get "/official/levels/list" do
   levels = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
-    .reverse
     .filter { |l| l[:publishedAt] < Time.now.to_i * 1000 }
     .filter { |l| params[:keywords] ? l[:title].include?(params[:keywords]) : true }
+    .sort_by { |l| -l[:publishedAt] }
   vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
   json(
     {
-      items: levels[-20 * params[:page].to_i, 20].map do |level|
+      items: levels[20 * (params[:page].to_i), 20]&.map do |level|
         level_vocals = vocals.filter { |v| v[:musicId] == level[:id] }
         preview_id = level_vocals.first[:assetbundleName]
         {
@@ -568,7 +574,7 @@ get "/official/levels/list" do
           artists: format_artist(level),
           cover: {
             type: :LevelCover,
-            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
+            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id]}.png",
           },
           engine: {
             name: "category",
@@ -579,7 +585,7 @@ get "/official/levels/list" do
             url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
           },
         }
-      end,
+      end || [],
       pageCount: (levels.length / 20.0).ceil,
       search: { options: SEARCH_OPTION },
     }
