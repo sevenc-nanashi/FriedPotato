@@ -109,9 +109,21 @@ def start_python
   Open3.popen2({ "PORT" => $config.python_port.to_s }, "../.venv/Scripts/python.exe ./main.py", chdir: "bg_gen_python")
 end
 
+if ENV["DOCKER"] == "true"
+  $config.public = true if ENV["PUBLIC"] == "true"
+  $config.engine_path = "./engine"
+  $config.background_engine = "web"
+end
 require "sinatra/reloader" unless $config.public
 $hash_cache = {}
-OFFICIAL_CHARACTERS = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/gameCharacters.json").body.to_s, symbolize_names: true)
+OFFICIAL_CHARACTERS = JSON.parse(
+  HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/gameCharacters.json").body.to_s,
+  symbolize_names: true,
+).to_h { |c| [c[:id], c] }
+OUTSIDE_CHARACTERS = JSON.parse(
+  HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/outsideCharacters.json").body.to_s,
+  symbolize_names: true,
+).to_h { |c| [c[:id], c] }
 
 def get_file_hash(path)
   $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
@@ -308,11 +320,6 @@ SEARCH_OPTION = [
   },
 ]
 
-if ENV["DOCKER"] == "true"
-  $config.public = true if ENV["PUBLIC"] == "true"
-  $config.engine_path = "./engine"
-  $config.background_engine = "web"
-end
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
@@ -730,8 +737,9 @@ get %r{/official/levels/group-([^\.]+)} do |name|
           useDefault: true,
         },
         title: "#{difficulty[:musicDifficulty].capitalize} - #{vocal[:caption]}",
-        artists: OFFICIAL_CHARACTERS.filter { |c| vocal[:characters].any? { |vc| vc[:characterId] == c[:id] } }
-          .map { |c| "#{c[:firstName]} #{c[:givenName]}".strip }
+        artists: vocal[:characters]
+          .map { |c| c[:characterType] == "game_character" ? OFFICIAL_CHARACTERS[c[:characterId]] : OUTSIDE_CHARACTERS[c[:characterId]] }
+          .map { |c| c[:name] || "#{c[:firstName]} #{c[:givenName]}".strip }
           .join(" & ").then { |s| s.empty? ? "-" : s },
         author: "",
         cover: {
