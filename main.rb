@@ -558,7 +558,7 @@ end
 get "/official/levels/list" do
   levels = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
     .filter { |l| l[:publishedAt] < Time.now.to_i * 1000 }
-    .filter { |l| params[:keywords] ? l[:title].include?(params[:keywords]) : true }
+    .filter { |l| params[:keywords] ? params[:keywords].split.all? { |k| l[:title].include?(k) } : true }
     .sort_by { |l| -l[:publishedAt] }
   vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
   json(
