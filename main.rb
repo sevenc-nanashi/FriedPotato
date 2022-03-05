@@ -1151,6 +1151,10 @@ get %r{/(?:tests/(?:[^/]+)|official)/(.+)} do |path|
   redirect "/#{path}", 301
 end
 
+get %r{/pjsekai/(.+)} do |path|
+  redirect "/official/#{path}", 301
+end
+
 unless $config.public
   ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address
   puts <<~EOS.strip
