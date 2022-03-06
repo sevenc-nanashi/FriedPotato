@@ -581,7 +581,7 @@ get "/official/levels/list" do
           artists: format_artist(level),
           cover: {
             type: :LevelCover,
-            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id]}.png",
+            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
           },
           engine: {
             name: "category",
@@ -744,7 +744,7 @@ get %r{/official/levels/group-([^\.]+)} do |name|
         author: "",
         cover: {
           type: :LevelCover,
-          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id]}_rip/jacket_s_#{level[:id]}.png",
+          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
         },
         bgm: {
           type: :LevelBgm,
