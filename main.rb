@@ -822,19 +822,11 @@ get %r{/official/generate/(.+)} do |name|
         if res.status == 200
           File.write("dist/bg/#{name}.png", res.body, mode: "wb")
         else
-          if modifier.include?("e")
-            redirect "/repo/background-base-extra.png"
-          else
-            redirect "/repo/background-base.png"
-          end
+          redirect "/repo/background-base.png"
         end
       end
     when "none"
-      if modifier.include?("e")
-        redirect "/repo/background-base-extra.png"
-      else
-        redirect "/repo/background-base.png"
-      end
+      redirect "/repo/background-base.png"
     end
   end
   send_file("./dist/bg/#{name}.png")
