@@ -1,7 +1,10 @@
 # == Engine ==================================================================
 FROM node:latest AS build
 RUN apt-get update -y && apt-get install -y \
-    git
+    git tzdata && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+ENV TZ=Asia/Tokyo
 WORKDIR /
 
 # -- Installations -----------------------------------------------------------
