@@ -295,7 +295,7 @@ def modify_level!(level, extra, server)
     },
     image: {
       type: :BackgroundImage,
-      url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-#{modifier}",
+      url: "/generate/#{level[:name].delete_suffix(".extra")}_#{level[:cover][:hash]}-#{modifier}",
     },
     configuration: {
       type: :BackgroundConfiguration,
