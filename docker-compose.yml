@@ -9,3 +9,5 @@ services:
       - PORT=4567
       - PUBLIC=$PUBLIC
     cpus: 0.2
+    volumes:
+      - "./dist:/root/dist"
