@@ -8,7 +8,7 @@ ENV TZ=Asia/Tokyo
 WORKDIR /
 
 # -- Installations -----------------------------------------------------------
-RUN date +'%s.%3N' > /dev/null
+RUN date +'%s.%3N' > /start_time.txt
 RUN git clone https://github.com/sevenc-nanashi/sonolus-pjsekai-engine-extended.git engine
 
 # -- Compile -----------------------------------------------------------------
