@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "json"
 require "uri"
 require "sinatra"
@@ -41,7 +42,7 @@ class Config
       description: "公開サーバーモードで起動するか。",
       default: false,
     },
-  }
+  }.freeze
 
   def initialize
     load
@@ -49,15 +50,21 @@ class Config
 
   def method_missing(name, value = nil)
     if name.end_with?("=")
-      unless KEYS.key?(name.to_s.chop.to_sym)
-        raise "unknown key: #{name}"
-      end
+      raise "unknown key: #{name}" unless KEYS.key?(name.to_s.chop.to_sym)
       @config[name.to_s.chop.to_sym] = value
       save
     else
       load
       raise "unknown key: #{name}" if @config.key?(name).nil?
       @config[name]
+    end
+  end
+
+  def respond_to_missing?(name, _priv)
+    if name.end_with?("=")
+      @config.key?(name.to_s.chop.to_sym)
+    else
+      @config.key?(name)
     end
   end
 
@@ -74,7 +81,7 @@ class Config
 
   def load
     @config = if File.exist?("./config.yml")
-        YAML.load(File.read("./config.yml"), symbolize_names: true)
+        YAML.safe_load(File.read("./config.yml"), symbolize_names: true)
       else
         {}
       end
@@ -96,13 +103,11 @@ end
 $config = Config.new
 
 def python_started?
-  begin
-    Socket.tcp("localhost", $config.python_port, connect_timeout: 0.1) { }
-  rescue Errno::ETIMEDOUT
-    return false
-  else
-    return true
-  end
+  Socket.tcp("localhost", $config.python_port, connect_timeout: 0.1).close
+rescue Errno::ETIMEDOUT
+  false
+else
+  true
 end
 
 def start_python
@@ -157,13 +162,13 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "SkinThumbnail",
                      hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
-                     url: "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289" },
+                     url: "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289", },
         data: { type: "SkinData",
                 hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-                url: "https://servers.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af" },
+                url: "https://servers.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af", },
         texture: { type: "SkinTexture",
                    hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-                   url: "https://servers.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c" },
+                   url: "https://servers.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c", },
       },
       effect: {
         name: "pjsekai.fixed",
@@ -173,10 +178,10 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "EffectThumbnail",
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
+                     url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560", },
         data: { type: "EffectData",
                 hash: get_file_hash("./public/repo/seconfig.gz"),
-                url: "/repo/seconfig.gz" },
+                url: "/repo/seconfig.gz", },
       },
       particle: {
         name: "pjsekai.classic",
@@ -186,13 +191,13 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "ParticleThumbnail",
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
+                     url: "https://servers.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560", },
         data: { type: "ParticleData",
                 hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
-                url: "https://servers.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8" },
+                url: "https://servers.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8", },
         texture: { type: "ParticleTexture",
                    hash: "4850a8f335204108c439def535bcf693c7f8d050",
-                   url: "https://servers.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050" },
+                   url: "https://servers.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050", },
       },
       thumbnail: {
         type: "EngineThumbnail",
@@ -212,7 +217,7 @@ def modify_level!(level, extra, server)
     }
     level[:data][:url] = "/convert/#{level[:name]}"
     level[:data].delete(:hash)
-    level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exists?("./convert/#{level[:name]}.gz")
+    level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exist?("./convert/#{level[:name]}.gz")
   elsif level[:engine][:name] == "psekai"
     level[:data][:url] = "/convert/l_#{level[:name]}"
     level[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
@@ -228,15 +233,15 @@ def modify_level!(level, extra, server)
     )
   else
     level[:data][:url] = "/modify/#{level[:name]}-#{level[:data][:hash]}"
-    if File.exists?("dist/modify/#{level[:data][:hash]}.gz")
+    if File.exist?("dist/modify/#{level[:data][:hash]}.gz")
       level[:data][:hash] = get_file_hash("dist/modify/#{level[:data][:hash]}.gz")
     else
       level[:data].delete(:hash)
     end
   end
-  img_name = level[:name].dup
+  # img_name = level[:name].dup
   if extra
-    img_name += ".extra"
+    # img_name += ".extra"
     modifier += "e"
     level[:title] += " (Extra)"
     level[:name] += ".extra"
@@ -306,9 +311,7 @@ def modify_level!(level, extra, server)
   level[:engine][:effect][:name] = "pjsekai.fixed"
   level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/seconfig.gz")
-  if File.exists?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
-    level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
-  end
+  level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
 end
 
 SEARCH_OPTION = [
@@ -318,7 +321,7 @@ SEARCH_OPTION = [
     query: "keywords",
     type: "text",
   },
-]
+].freeze
 
 set :bind, "0.0.0.0"
 set :public_folder, File.dirname(__FILE__) + "/public"
@@ -334,7 +337,7 @@ get "/" do
 end
 
 get "/info" do
-  json ({
+  json({
     levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: [
       {
@@ -358,7 +361,7 @@ get "/info" do
 end
 
 get "/tests/:test_id/info" do |test_id|
-  json ({
+  json({
     levels: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id)).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: [],
     backgrounds: [],
@@ -368,7 +371,7 @@ get "/tests/:test_id/info" do |test_id|
   })
 end
 get "/official/info" do
-  json ({
+  json({
     levels: JSON.parse(File.read("./info_official.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: [],
     backgrounds: [],
@@ -410,9 +413,9 @@ get "/backgrounds/list" do
   json res
 end
 
-get "/backgrounds/:name" do |name|
+get "/backgrounds/:name" do |_name|
   level = JSON.parse(HTTP.get("https://servers.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
-  json ({
+  json({
     description: level[:description],
     recommended: [],
     item: {
@@ -442,26 +445,22 @@ end
 
 get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
   modifier = key.split("-")[1] || ""
-  unless File.exists?("dist/bg/#{key}.png")
+  unless File.exist?("dist/bg/#{key}.png")
     case $config.background_engine
     when "dxruby"
       $current = name
-      eval File.read("./bg_gen/main.rb")
+      eval File.read("./bg_gen/main.rb")  # rubocop:disable Security/Eval
     when "pillow"
-      unless python_started?
-        start_python
-      end
+      start_python unless python_started?
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}")
     when "web"
       HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
         if res.status == 200
           File.write("dist/bg/#{key}.png", res.body, mode: "wb")
+        elsif modifier.include?("e")
+          redirect "/repo/background-base-extra.png"
         else
-          if modifier.include?("e")
-            redirect "/repo/background-base-extra.png"
-          else
-            redirect "/repo/background-base.png"
-          end
+          redirect "/repo/background-base.png"
         end
       end
     when "none"
@@ -479,8 +478,8 @@ get "/levels/list" do
   ppdata = JSON.parse(
     HTTP.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
   )
-  if params[:keywords].nil? or params[:keywords].empty?
-    if ppdata[:items].length == 0
+  if params[:keywords].nil? || params[:keywords].empty?
+    if ppdata[:items].length.zero?
       levels = JSON.parse(
         HTTP.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
           .to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
@@ -511,12 +510,12 @@ get %r{(?:/tests/[^/]+|/official)?/levels/(Welcome%21|About|system)} do
   json({ item: JSON.load_file("./unavailable.json") })
 end
 
-get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
-  if name.start_with?("l_")
-    level_raw = HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..-1].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
-  else
-    level_raw = HTTP.get("https://servers.purplepalette.net/levels/#{name}").body.to_s.gsub('"/', '"https://servers.purplepalette.net/')
-  end
+get %r{(?:/tests/[^/]+)?/levels/([^.]+)(?:\.(.+))?} do |name, suffix|
+  level_raw = if name.start_with?("l_")
+      HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
+    else
+      HTTP.get("https://servers.purplepalette.net/levels/#{name}").body.to_s.gsub('"/', '"https://servers.purplepalette.net/')
+    end
 
   level_hash = JSON.parse(level_raw, symbolize_names: true)
   level = level_hash[:item]
@@ -541,7 +540,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^\.]+)(?:\.(.+))?} do |name, suffix|
       engine: {},
     },
   ]
-  if File.exists?("dist/bg/#{level[:name]}.png") && !$config.public
+  if File.exist?("dist/bg/#{level[:name]}.png") && !$config.public
     level_hash[:recommended] << {
       name: level[:name] + ".delete-cache",
       version: 2,
@@ -570,7 +569,7 @@ get "/official/levels/list" do
   vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
   json(
     {
-      items: levels[20 * (params[:page].to_i), 20]&.map do |level|
+      items: levels[20 * params[:page].to_i, 20]&.map do |level|
         level_vocals = vocals.filter { |v| v[:musicId] == level[:id] }
         preview_id = level_vocals.first[:assetbundleName]
         {
@@ -599,7 +598,7 @@ get "/official/levels/list" do
   )
 end
 
-get %r{/official/levels/group-([^\.]+)} do |name|
+get %r{/official/levels/group-([^.]+)} do |name|
   level = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
     .find { |l| l[:id] == name.to_i }
   vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
@@ -783,13 +782,13 @@ get %r{/official/levels/group-([^\.]+)} do |name|
         url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
       },
     },
-    description: <<~EOS,
+    description: <<~DESCRIPTION,
       作詞：#{level[:lyricist]}
       作曲：#{level[:composer]}
       編曲：#{level[:arranger]}
 
       追加日時：#{Time.at(level[:publishedAt] / 1000, in: "+09:00").strftime("%Y/%m/%d %H:%M:%S")}
-    EOS
+    DESCRIPTION
     recommended: levels,
   })
 end
@@ -807,23 +806,20 @@ get %r{/official/bgm/(.+)} do |name|
 end
 
 get %r{/official/generate/(.+)} do |name|
-  unless File.exists?("dist/bg/#{name}.png")
+  unless File.exist?("dist/bg/#{name}.png")
     case $config.background_engine
     when "dxruby"
-      eval File.read("./bg_gen/main.rb")
+      eval File.read("./bg_gen/main.rb")  # rubocop:disable Security/Eval
     when "pillow"
-      unless python_started?
-        start_python
-      end
+      start_python unless python_started?
       res = HTTP.get("http://localhost:#{$config.python_port}/generate/official-#{name}.png")
       File.write("dist/bg/#{name}.png", res.body, mode: "wb")
     when "web"
-      HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png").then do |res|
-        if res.status == 200
-          File.write("dist/bg/#{name}.png", res.body, mode: "wb")
-        else
-          redirect "/repo/background-base.png"
-        end
+      res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png")
+      if res.status == 200
+        File.write("dist/bg/#{name}.png", res.body, mode: "wb")
+      else
+        redirect "/repo/background-base.png"
       end
     when "none"
       redirect "/repo/background-base.png"
@@ -850,36 +846,36 @@ get %r{/official/shift/(.+?)} do |name|
 end
 
 get "/effects/pjsekai.fixed" do
-  json ({
-    "description": "",
-    "item": {
-      "author": "Sonolus",
-      "data": {
-        "hash": get_file_hash("./public/repo/seconfig.gz"),
-        "type": "EffectData",
-        "url": "/repo/seconfig.gz",
+  json({
+    description: "",
+    item: {
+      author: "Sonolus",
+      data: {
+        hash: get_file_hash("./public/repo/seconfig.gz"),
+        type: "EffectData",
+        url: "/repo/seconfig.gz",
       },
-      "name": "pjsekai.fixed",
-      "subtitle": "Project Sekai: Colorful Stage!",
-      "thumbnail": {
-        "hash": "e5f439916eac9bbd316276e20aed999993653560",
-        "type": "EffectThumbnail",
-        "url": "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+      name: "pjsekai.fixed",
+      subtitle: "Project Sekai: Colorful Stage!",
+      thumbnail: {
+        hash: "e5f439916eac9bbd316276e20aed999993653560",
+        type: "EffectThumbnail",
+        url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
       },
-      "title": "Project Sekai",
-      "version": 2,
+      title: "Project Sekai",
+      version: 2,
     },
-    "recommended": [],
+    recommended: [],
   })
 end
 
 get %r{(?:/tests/.+)?/convert/(.+)} do |name|
-  next send_file "./dist/conv/#{name}.gz" if File.exists?("./dist/conv/#{name}.gz")
-  if name.start_with?("l_")
-    raw = HTTP.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
-  else
-    raw = HTTP.get("https://servers.purplepalette.net/repository/#{name}/data.gz").body
-  end
+  next send_file "./dist/conv/#{name}.gz" if File.exist?("./dist/conv/#{name}.gz")
+  raw = if name.start_with?("l_")
+      HTTP.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
+    else
+      HTTP.get("https://servers.purplepalette.net/repository/#{name}/data.gz").body
+    end
   gzreader = Zlib::GzipReader.new(StringIO.new(raw))
   json = gzreader.read
   gzreader.close
@@ -972,17 +968,13 @@ get %r{(?:/tests/.+)?/convert/(.+)} do |name|
       ]
       cursor = val[0]
       while data = slide_positions[cursor]
-        if data.length == 3
-          break
-        end
+        break if data.length == 3
         cursor = data[0]
       end
       first_index = cursor
       cursor = val[0]
       while data = slide_positions[cursor]
-        if data.length == 3
-          data = [nil] + data
-        end
+        data = [nil] + data if data.length == 3
         width = (data[3] + 1) / 2.0
         position = [data[1], data[2] + width, width]
         last_entities << {
@@ -1026,19 +1018,19 @@ get %r{(?:/tests/.+)?/overrides/(.+)} do |path|
   send_file "./overrides/#{path}"
 end
 
-get %r{(?:/tests/([^/]+))?/repo/(.+)} do |name, path|
+get %r{(?:/tests/([^/]+))?/repo/(.+)} do |_name, path|
   redirect "/repo/#{path}"
 end
 
-get %r{(?:/tests/([^/]+))?/data-overrides/(.+)} do |name, path|
+get %r{(?:/tests/([^/]+))?/data-overrides/(.+)} do |_name, path|
   send_file "./dist/data-overrides/#{path}"
 end
 
-get %r{(?:/tests/([^/]+))?/skin/texture} do |name|
+get %r{(?:/tests/([^/]+))?/skin/texture} do |_name|
   send_file "./skin/texture.png"
 end
 
-get %r{(?:/tests/([^/]+))?/skin/data} do |name|
+get %r{(?:/tests/([^/]+))?/skin/data} do |_name|
   hash = get_file_hash("./skin/data.json")
   unless File.exist?("./dist/skin/#{hash}.gz")
     Zlib::GzipWriter.open("./dist/skin/#{hash}.gz") do |gz|
@@ -1048,10 +1040,10 @@ get %r{(?:/tests/([^/]+))?/skin/data} do |name|
   send_file "./dist/skin/#{hash}.gz"
 end
 
-get %r{(?:/tests/([^/]+))?/engine/data} do |name|
+get %r{(?:/tests/([^/]+))?/engine/data} do |_name|
   send_file $config.engine_path + "/dist/EngineData"
 end
-get %r{(?:/tests/([^/]+))?/engine/configuration} do |name|
+get %r{(?:/tests/([^/]+))?/engine/configuration} do |_name|
   send_file $config.engine_path + "/dist/EngineConfiguration"
 end
 
@@ -1113,10 +1105,10 @@ get "/skins/pjsekai.extended" do
   JSON
 end
 
-get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
-  cfg = [[?t, $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
+get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |_name, level, hash|
+  cfg = [["t", $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
   key = "#{hash}-#{cfg}"
-  next send_file "./dist/modify/#{key}.gz" if File.exists?("./dist/modify/#{key}.gz")
+  next send_file "./dist/modify/#{key}.gz" if File.exist?("./dist/modify/#{key}.gz")
   raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
   gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
@@ -1124,17 +1116,17 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |name, level, hash|
   will_delete = []
   if $config.trace_enabled
     entities.filter { |e| e[:archetype] == 9 }.each do |e|
-      next unless e[:data][:values][3] - e[:data][:values][0] == 0.0625 and e[:data][:values][1..2] == e[:data][:values][4..5]
+      next unless (e[:data][:values][3] - e[:data][:values][0] - 0.0625 < 0.01) && (e[:data][:values][1..2] == e[:data][:values][4..5])
       not_found = false
-      entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e2|
-        index = entities.find_index(e2)
-        end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e2[:data][:values][4] == index }
+      entities.find { |e2| e2[:archetype] == 5 and e2[:data][:values] == e[:data][:values][0..2] }.tap do |e3|
+        index = entities.find_index(e3)
+        end_note = entities.find { |e2| [7, 8].include?(e2[:archetype]) and e[:data][:values][4] == index }
         next not_found = true unless end_note
         if end_note[:archetype] == 7
-          e2[:archetype] = 18
+          e3[:archetype] = 18
         else
-          e2[:archetype] = 19
-          e2[:data][:values][3] = end_note[:data][:values][3]
+          e3[:archetype] = 19
+          e3[:data][:values][3] = end_note[:data][:values][3]
         end
         will_delete << end_note
       end
@@ -1165,7 +1157,7 @@ end
 
 unless $config.public
   ip = Socket.ip_address_list.find(&:ipv4_private?).ip_address
-  puts <<~EOS.strip
+  puts <<~MESSAGE.strip
          \e[91m+---------------------------------------------+\e[m
          \e[91m|            FriedPotatoへようこそ！          |\e[m
          \e[91m+---------------------------------------------+\e[m
@@ -1179,6 +1171,6 @@ unless $config.public
          \e[97mCtrl+C\e[m を押すと終了します。
  
          Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
-       EOS
+       MESSAGE
   puts
 end
