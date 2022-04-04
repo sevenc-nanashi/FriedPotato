@@ -455,6 +455,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
       start_python unless python_started?
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}")
     when "web"
+      name += "_#{key}" if name == "l"
       HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
         if res.status == 200
           File.write("dist/bg/#{key}.png", res.body, mode: "wb")
