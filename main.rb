@@ -215,6 +215,7 @@ def modify_level!(level, extra, server)
         url: "https://servers.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
       },
     }
+    level[:useBackground] = {}
     level[:data][:url] = "/convert/#{level[:name]}"
     level[:data].delete(:hash)
     level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exist?("./convert/#{level[:name]}.gz")
@@ -454,6 +455,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
       start_python unless python_started?
       HTTP.get("http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}")
     when "web"
+      name += "_#{key}" if name == "l"
       HTTP.post("https://image-gen.sevenc7c.com/generate/#{name}?extra=#{modifier.include?("e")}").then do |res|
         if res.status == 200
           File.write("dist/bg/#{key}.png", res.body, mode: "wb")
