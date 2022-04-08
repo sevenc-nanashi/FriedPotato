@@ -480,7 +480,6 @@ get "/levels/list" do
   ppdata = JSON.parse(
     HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
-  pp ppdata
   if params[:keywords].nil? || params[:keywords].empty?
     if ppdata[:items].length.zero?
       levels = JSON.parse(
