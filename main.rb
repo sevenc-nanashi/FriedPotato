@@ -497,6 +497,14 @@ get "/levels/list" do
     ppdata[:pageCount] += 1
   end
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
+  ppdata[:search] = {
+    options: {
+      name: "#KEYWORDS",
+      placeholder: "#KEYWORDS",
+      query: "keywords",
+      type: "text",
+    },
+  }
   json ppdata
 end
 
