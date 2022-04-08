@@ -478,8 +478,9 @@ end
 
 get "/levels/list" do
   ppdata = JSON.parse(
-    HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
+    HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
+  pp ppdata
   if params[:keywords].nil? || params[:keywords].empty?
     if ppdata[:items].length.zero?
       levels = JSON.parse(
@@ -505,7 +506,7 @@ end
 
 get "/tests/:test_id/levels/list" do |test_id|
   ppdata = JSON.parse(
-    HTTP.get("https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
+    HTTP.get("https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
   ppdata[:search] = {
