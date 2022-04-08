@@ -505,6 +505,14 @@ get "/tests/:test_id/levels/list" do |test_id|
     HTTP.get("https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
+  ppdata[:search] = {
+    options: {
+      name: "#KEYWORDS",
+      placeholder: "#KEYWORDS",
+      query: "keywords",
+      type: "text",
+    },
+  }
   json ppdata
 end
 
