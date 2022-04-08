@@ -31,4 +31,5 @@ COPY --from=build /engine/dist/EngineData engine/dist/EngineData
 COPY --from=build /engine/dist/EngineConfiguration engine/dist/EngineConfiguration
 COPY . .
 ENV PORT=3000
+ENV RUBYOPTS=--jit
 CMD ["/bin/sh", "-c", "bundle exec puma -p $PORT"]
