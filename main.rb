@@ -162,13 +162,13 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "SkinThumbnail",
                      hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
-                     url: "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289", },
+                     url: "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289" },
         data: { type: "SkinData",
                 hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-                url: "https://servers.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af", },
+                url: "https://servers-legacy.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af" },
         texture: { type: "SkinTexture",
                    hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-                   url: "https://servers.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c", },
+                   url: "https://servers-legacy.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c" },
       },
       effect: {
         name: "pjsekai.fixed",
@@ -178,10 +178,10 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "EffectThumbnail",
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560", },
+                     url: "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
         data: { type: "EffectData",
                 hash: get_file_hash("./public/repo/seconfig.gz"),
-                url: "/repo/seconfig.gz", },
+                url: "/repo/seconfig.gz" },
       },
       particle: {
         name: "pjsekai.classic",
@@ -191,28 +191,28 @@ def modify_level!(level, extra, server)
         author: "Sonolus",
         thumbnail: { type: "ParticleThumbnail",
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560", },
+                     url: "https://servers-legacy.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
         data: { type: "ParticleData",
                 hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
-                url: "https://servers.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8", },
+                url: "https://servers-legacy.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8" },
         texture: { type: "ParticleTexture",
                    hash: "4850a8f335204108c439def535bcf693c7f8d050",
-                   url: "https://servers.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050", },
+                   url: "https://servers-legacy.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050" },
       },
       thumbnail: {
         type: "EngineThumbnail",
         hash: "e5f439916eac9bbd316276e20aed999993653560",
-        url: "https://servers.purplepalette.net/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+        url: "https://servers-legacy.purplepalette.net/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
       },
       data: {
         type: "EngineData",
         hash: "86773c786f00b8b6cd2f6f99be11f62281385133",
-        url: "https://servers.purplepalette.net/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133",
+        url: "https://servers-legacy.purplepalette.net/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133",
       },
       configuration: {
         type: "EngineConfiguration",
         hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-        url: "https://servers.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
+        url: "https://servers-legacy.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
       },
     }
     level[:useBackground] = {}
@@ -382,7 +382,7 @@ get "/official/info" do
   })
 end
 get "/backgrounds/list" do
-  levels = JSON.parse(HTTP.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
+  levels = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
   res = {
     pageCount: levels[:pageCount],
     items: levels[:items].map do |level|
@@ -393,7 +393,7 @@ get "/backgrounds/list" do
         subtitle: "#{level[:artists]} / #{level[:author]}",
         thumbnail: {
           type: :BackgroundThumbnail,
-          url: "https://servers.purplepalette.net" + level[:cover][:url],
+          url: "https://servers-legacy.purplepalette.net" + level[:cover][:url],
         },
         data: {
           type: :BackgroundData,
@@ -415,7 +415,7 @@ get "/backgrounds/list" do
 end
 
 get "/backgrounds/:name" do |_name|
-  level = JSON.parse(HTTP.get("https://servers.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
+  level = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
   json({
     description: level[:description],
     recommended: [],
@@ -426,7 +426,7 @@ get "/backgrounds/:name" do |_name|
       subtitle: "#{level[:artists]} / #{level[:author]}",
       thumbnail: {
         type: :BackgroundThumbnail,
-        url: "https://servers.purplepalette.net" + level[:cover][:url],
+        url: "https://servers-legacy.purplepalette.net" + level[:cover][:url],
       },
       data: {
         type: :BackgroundData,
@@ -478,7 +478,7 @@ end
 
 get "/levels/list" do
   ppdata = JSON.parse(
-    HTTP.get("https://servers.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
+    HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
   if params[:keywords].nil? || params[:keywords].empty?
     if ppdata[:items].length.zero?
@@ -502,7 +502,7 @@ end
 
 get "/tests/:test_id/levels/list" do |test_id|
   ppdata = JSON.parse(
-    HTTP.get("https://servers.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers.purplepalette.net/'), symbolize_names: true,
+    HTTP.get("https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i })).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
   json ppdata
@@ -516,7 +516,7 @@ get %r{(?:/tests/[^/]+)?/levels/([^.]+)(?:\.(.+))?} do |name, suffix|
   level_raw = if name.start_with?("l_")
       HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
     else
-      HTTP.get("https://servers.purplepalette.net/levels/#{name}").body.to_s.gsub('"/', '"https://servers.purplepalette.net/')
+      HTTP.get("https://servers-legacy.purplepalette.net/levels/#{name}").body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/')
     end
 
   level_hash = JSON.parse(level_raw, symbolize_names: true)
@@ -862,7 +862,7 @@ get "/effects/pjsekai.fixed" do
       thumbnail: {
         hash: "e5f439916eac9bbd316276e20aed999993653560",
         type: "EffectThumbnail",
-        url: "https://servers.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
+        url: "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
       },
       title: "Project Sekai",
       version: 2,
@@ -876,7 +876,7 @@ get %r{(?:/tests/.+)?/convert/(.+)} do |name|
   raw = if name.start_with?("l_")
       HTTP.get("https://PurplePalette.github.io/sonolus/repository/levels/#{name[2..]}/level")
     else
-      HTTP.get("https://servers.purplepalette.net/repository/#{name}/data.gz").body
+      HTTP.get("https://servers-legacy.purplepalette.net/repository/#{name}/data.gz").body
     end
   gzreader = Zlib::GzipReader.new(StringIO.new(raw))
   json = gzreader.read
@@ -1068,7 +1068,7 @@ get "/skins/list" do
           },
           "thumbnail": {
               "type": "SkinThumbnail",
-              "url": "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+              "url": "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
           },
           "title": "Project Sekai",
           "version": 2
@@ -1096,7 +1096,7 @@ get "/skins/pjsekai.extended" do
         "thumbnail": {
             "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
             "type": "SkinThumbnail",
-            "url": "https://servers.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+            "url": "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
         },
         "title": "Project Sekai",
         "version": 2
@@ -1111,7 +1111,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |_name, level, hash|
   cfg = [["t", $config.trace_enabled]].filter { |x| x[1] }.map { |x| x[0] }.join
   key = "#{hash}-#{cfg}"
   next send_file "./dist/modify/#{key}.gz" if File.exist?("./dist/modify/#{key}.gz")
-  raw = HTTP.get("https://servers.purplepalette.net/repository/#{level}/data.gz").body
+  raw = HTTP.get("https://servers-legacy.purplepalette.net/repository/#{level}/data.gz").body
   gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
   level_data = JSON.parse(gzreader.read, symbolize_names: true)
   entities = level_data[:entities]
