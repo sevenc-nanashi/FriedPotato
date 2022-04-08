@@ -498,12 +498,7 @@ get "/levels/list" do
   end
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
   ppdata[:search] = {
-    options: {
-      name: "#KEYWORDS",
-      placeholder: "#KEYWORDS",
-      query: "keywords",
-      type: "text",
-    },
+    options: SEARCH_OPTION,
   }
   json ppdata
 end
@@ -514,12 +509,7 @@ get "/tests/:test_id/levels/list" do |test_id|
   )
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
   ppdata[:search] = {
-    options: {
-      name: "#KEYWORDS",
-      placeholder: "#KEYWORDS",
-      query: "keywords",
-      type: "text",
-    },
+    options: SEARCH_OPTION,
   }
   json ppdata
 end
