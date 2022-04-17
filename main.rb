@@ -312,7 +312,7 @@ def modify_level!(level, extra, server)
   level[:engine][:effect][:name] = "pjsekai.fixed"
   level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
   level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/seconfig.gz")
-  level[:engine][:background][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+  level[:useBackground][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
 end
 
 SEARCH_OPTION = [
