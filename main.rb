@@ -247,7 +247,7 @@ def modify_level!(level, extra, server)
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
-  level[:engine][:bersion] = 5
+  level[:engine][:version] = 5
   if Dir.exist?("./overrides/#{name}")
     if File.exist?("./overrides/#{name}/thumbnail.png")
       level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
