@@ -145,7 +145,7 @@ def modify_level!(level, extra, server)
   elsif level[:engine][:name] == "wbp-pjsekai"
     level[:engine] = {
       name: "pjsekai",
-      version: 4,
+      version: 5,
       title: "プロセカ（コンバーター）",
       subtitle: "プロジェクトセカイ カラフルステージ!",
       author: "Burrito",
@@ -241,6 +241,7 @@ def modify_level!(level, extra, server)
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
+  level[:engine][:bersion] = 5
   if Dir.exist?("./overrides/#{name}")
     if File.exist?("./overrides/#{name}/thumbnail.png")
       level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
