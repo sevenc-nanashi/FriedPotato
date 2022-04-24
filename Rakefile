@@ -15,3 +15,7 @@ task :seconfig do
   end
   puts "seconfig.gz created"
 end
+
+task :lint do
+  sh "rubocop *.rb"
+end

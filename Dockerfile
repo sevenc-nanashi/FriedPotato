@@ -8,7 +8,9 @@ ENV TZ=Asia/Tokyo
 WORKDIR /
 
 # -- Installations -----------------------------------------------------------
-RUN date +'%s.%3N' > /dev/null
+RUN git ls-remote \
+    https://github.com/sevenc-nanashi/sonolus-pjsekai-engine-extended.git HEAD | \
+    awk '{ print $1}' > /tmp/engine-version  # Cache
 RUN git clone https://github.com/sevenc-nanashi/sonolus-pjsekai-engine-extended.git engine
 
 # -- Compile -----------------------------------------------------------------
@@ -31,4 +33,5 @@ COPY --from=build /engine/dist/EngineData engine/dist/EngineData
 COPY --from=build /engine/dist/EngineConfiguration engine/dist/EngineConfiguration
 COPY . .
 ENV PORT=3000
+ENV RUBYOPTS=--jit
 CMD ["/bin/sh", "-c", "bundle exec puma -p $PORT"]

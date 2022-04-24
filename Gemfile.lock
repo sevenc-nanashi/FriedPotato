@@ -3,9 +3,11 @@ GEM
   specs:
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
+    ast (2.4.2)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dxruby (1.4.7)
+    ffi (1.15.5)
     ffi (1.15.5-x64-mingw32)
     ffi (1.15.5-x86-mingw32)
     ffi-compiler (1.0.1)
@@ -19,7 +21,6 @@ GEM
     http-cookie (1.0.4)
       domain_name (~> 0.5)
     http-form_data (2.3.0)
-    kgio (2.11.4)
     llhttp-ffi (0.4.0)
       ffi-compiler (~> 1.0)
       rake (~> 13.0)
@@ -27,14 +28,31 @@ GEM
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.5.8)
+    parallel (1.22.1)
+    parser (3.1.1.0)
+      ast (~> 2.4.1)
     public_suffix (4.0.6)
-    puma (5.6.2)
+    puma (5.6.4)
       nio4r (~> 2.0)
     rack (2.2.3)
     rack-protection (2.2.0)
       rack
-    raindrops (0.20.0)
+    rainbow (3.1.1)
     rake (13.0.6)
+    regexp_parser (2.2.1)
+    rexml (3.2.5)
+    rubocop (1.26.1)
+      parallel (~> 1.10)
+      parser (>= 3.1.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml
+      rubocop-ast (>= 1.16.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.16.0)
+      parser (>= 3.1.1.0)
+    ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.5)
     sinatra (2.2.0)
       mustermann (~> 1.0)
@@ -52,25 +70,25 @@ GEM
     tilt (2.0.10)
     unf (0.1.4)
       unf_ext
+    unf_ext (0.0.8)
     unf_ext (0.0.8-x64-mingw32)
     unf_ext (0.0.8-x86-mingw32)
-    unicorn (6.1.0)
-      kgio (~> 2.6)
-      raindrops (~> 0.7)
+    unicode-display_width (2.1.0)
 
 PLATFORMS
   x64-mingw32
   x86-mingw32
+  x86_64-linux
 
 DEPENDENCIES
   dxruby (~> 1.4)
   http (~> 5.0.4)
   puma (~> 5.6)
   rack (~> 2.2)
+  rubocop (~> 1.26.1)
   sinatra (~> 2.1)
   sinatra-contrib (~> 2.1)
   sinatra-reloader (~> 1.0)
-  unicorn (~> 6.1)
 
 RUBY VERSION
    ruby 3.0.3p157

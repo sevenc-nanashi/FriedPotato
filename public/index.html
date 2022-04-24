@@ -409,7 +409,7 @@
       // initialize address box
       document.querySelector('#server-address').innerHTML = window.location.href
       document.querySelectorAll('.test-server').forEach((el) => {
-        el.textContent = window.location.href + 'test/<your-test-server-id>'
+        el.textContent = window.location.href + 'tests/<your-test-server-id>'
       })
       document.querySelector('#copy-button').addEventListener('click', () => {
         const textarea = document.createElement('textarea')
