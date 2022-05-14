@@ -801,11 +801,55 @@ get %r{/official/levels/group-([^.]+)} do |name|
     recommended: levels,
   })
 end
-get %r{/official/levels/level-(.+)} do |name|
+get %r{/official/levels/level-(.+?)(\.flick)?} do |name, flick|
+  p name, flick
   data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
   modify_level!(data[:item], false, :official)
-  data[:recommended] = []
+  level = data[:item]
+  if flick
+    level[:title] += "（フリック）"
+    level[:name] += ".flick"
+    # level[:useBackground][:item][:url] += ".flick"
+    level[:data][:url] = "/flick/#{name}"
+    level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
+  end
+  data[:recommended] = [
+    {
+      name: flick ? level[:name][..-7] : level[:name] + ".flick",
+      version: 2,
+      title: flick ? "FlickモードOFF" : "FlickモードON",
+      subtitle: "-",
+      cover: {
+        type: :LevelCover,
+        hash: get_file_hash("./public/repo/flick_#{flick ? "off" : "on"}.png"),
+        url: "/repo/flick_#{flick ? "off" : "on"}.png",
+      },
+      engine: {},
+    },
+  ]
   json data
+end
+
+get "/official/flick/:name" do |name|
+  next send_file("./dist/modify/#{name}-f.gz") if File.exist?("./dist/modify/#{name}-f.gz")
+  raw = HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}/data").body
+  gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
+  level_data = JSON.parse(gzreader.read, symbolize_names: true)
+  level_data[:entities].each do |entity|
+    next if entity[:archetype] < 3
+    val = entity[:data][:values]
+    val[0] -= 9
+    val[3] -= 9 if [9, 16].include?(entity[:archetype])
+
+    if [3, 7, 10, 14].include? entity[:archetype]
+      entity[:archetype] += 1
+      entity[:data][:values][3] = -1
+    end
+  end
+  Zlib::GzipWriter.open("./dist/modify/#{name}-f.gz") do |gz|
+    gz.write(JSON.dump(level_data))
+  end
+  send_file("./dist/modify/#{name}-f.gz")
 end
 
 get %r{/official/bgm/(.+)} do |name|
@@ -814,7 +858,7 @@ get %r{/official/bgm/(.+)} do |name|
   send_file("./dist/bgm/#{name}.mp3")
 end
 
-get %r{/official/generate/(.+)} do |name|
+get %r{/official/generate/(.+?)(\.flick)?} do |name, flick|
   unless File.exist?("dist/bg/#{name}.png")
     case $config.background_engine
     when "dxruby"
@@ -824,7 +868,7 @@ get %r{/official/generate/(.+)} do |name|
       res = HTTP.get("http://localhost:#{$config.python_port}/generate/official-#{name}.png")
       File.write("dist/bg/#{name}.png", res.body, mode: "wb")
     when "web"
-      res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png")
+      res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!!flick}")
       if res.status == 200
         File.write("dist/bg/#{name}.png", res.body, mode: "wb")
       else
