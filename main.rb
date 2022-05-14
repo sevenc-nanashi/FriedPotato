@@ -802,14 +802,14 @@ get %r{/official/levels/group-([^.]+)} do |name|
   })
 end
 get %r{/official/levels/level-(.+?)(\.flick)?} do |name, flick|
-  p name, flick
   data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
   modify_level!(data[:item], false, :official)
   level = data[:item]
   if flick
     level[:title] += "（フリック）"
     level[:name] += ".flick"
-    # level[:useBackground][:item][:url] += ".flick"
+    level[:useBackground][:item][:image][:url] += ".flick"
+    level[:useBackground][:item][:image][:hash] = File.exist?("./dist/bg/#{name}.flick.png") ? get_file_hash("./dist/bg/#{name}.flick.png") : ""
     level[:data][:url] = "/flick/#{name}"
     level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
   end
@@ -859,7 +859,7 @@ get %r{/official/bgm/(.+)} do |name|
 end
 
 get %r{/official/generate/(.+?)(\.flick)?} do |name, flick|
-  unless File.exist?("dist/bg/#{name}.png")
+  unless File.exist?("dist/bg/#{name}#{flick}.png")
     case $config.background_engine
     when "dxruby"
       eval File.read("./bg_gen/main.rb")  # rubocop:disable Security/Eval
@@ -870,7 +870,7 @@ get %r{/official/generate/(.+?)(\.flick)?} do |name, flick|
     when "web"
       res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!!flick}")
       if res.status == 200
-        File.write("dist/bg/#{name}.png", res.body, mode: "wb")
+        File.write("dist/bg/#{name}#{flick}.png", res.body, mode: "wb")
       else
         redirect "/repo/background-base.png"
       end
@@ -878,7 +878,7 @@ get %r{/official/generate/(.+?)(\.flick)?} do |name, flick|
       redirect "/repo/background-base.png"
     end
   end
-  send_file("./dist/bg/#{name}.png")
+  send_file("./dist/bg/#{name}#{flick}.png")
 end
 
 get %r{/official/shift/(.+?)} do |name|
