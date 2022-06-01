@@ -281,9 +281,18 @@ def modify_level!(level, extra, server)
     level[:engine][:skin][:data].delete(:hash)
   end
 
+  level[:engine][:skin][:title] = "PJSekai+"
+  level[:engine][:skin][:thumbnail][:url] = "https://servers.sonolus.com/pjsekai/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+  level[:engine][:skin][:thumbnail][:hash] = "24faf30cc2e0d0f51aeca3815ef523306b627289"
+  level[:engine][:skin][:author] = "Sonolus + Nanashi."
+  level[:engine][:skin][:subtitle] = "PJSekai Extended"
   level[:engine][:skin][:texture][:url] = "/skin/texture"
   level[:engine][:skin][:texture][:hash] = get_file_hash("./skin/texture.png")
-
+  level[:engine][:particle][:title] = "PJSekai"
+  level[:engine][:particle][:subtitle] = "From servers.sonolus.com/pjsekai"
+  level[:engine][:particle][:thumbnail][:url] = "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+  level[:engine][:particle][:thumbnail][:hash] = "e5f439916eac9bbd316276e20aed999993653560"
+  level[:engine][:particle][:author] = "Sonolus"
   level[:useBackground][:useDefault] = false
   level[:useBackground][:item] = {
     name: level[:name],
