@@ -6,7 +6,7 @@ task :seconfig do
   config = JSON.parse File.read("./raw_data/seconfig.json"), symbolize_names: true
   config[:clips].each do |c|
     unless c[:clip][:hash]
-      c[:clip][:hash] = Digest::SHA256.hexdigest(File.read("./public" + c[:clip][:url], mode: "rb"))
+      c[:clip][:hash] = Digest::SHA1.file("./public" + c[:clip][:url]).hexdigest
     end
   end
   pp config
