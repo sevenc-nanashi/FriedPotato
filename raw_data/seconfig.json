@@ -1,85 +1,4 @@
-{
-  "clips": [
-    {
-      "id": 1,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "fd5df025afe55268ea4af71ea5c8016337639823",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/fd5df025afe55268ea4af71ea5c8016337639823"
-      }
-    },
-    {
-      "id": 2,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "2bc3a89c8d3fcecef4fb1be767bf45318bdbde2f",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/2bc3a89c8d3fcecef4fb1be767bf45318bdbde2f"
-      }
-    },
-    {
-      "id": 3,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "9111b422519fe785ae690edcbc8cec798596e03b",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/9111b422519fe785ae690edcbc8cec798596e03b"
-      }
-    },
-    {
-      "id": 1001,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "278df1feb35d7e542a319e3a50f05ef7f807a92f",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/278df1feb35d7e542a319e3a50f05ef7f807a92f"
-      }
-    },
-    {
-      "id": 1002,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "278df1feb35d7e542a319e3a50f05ef7f807a92f",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/278df1feb35d7e542a319e3a50f05ef7f807a92f"
-      }
-    },
-    {
-      "id": 1003,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "278df1feb35d7e542a319e3a50f05ef7f807a92f",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/278df1feb35d7e542a319e3a50f05ef7f807a92f"
-      }
-    },
-    {
-      "id": 10000,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "b1ff03727665481ed5efc4e9d410c1158e2b232a",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/b1ff03727665481ed5efc4e9d410c1158e2b232a"
-      }
-    },
-    {
-      "id": 100201,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "d523bd3f340f43f9779daa3db067ff7c0ba5dc54",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/d523bd3f340f43f9779daa3db067ff7c0ba5dc54"
-      }
-    },
-    {
-      "id": 100202,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "c9fbe6c40bc36861e5518ceedfade9b27682cbe6",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/c9fbe6c40bc36861e5518ceedfade9b27682cbe6"
-      }
-    },
-    {
-      "id": 100203,
-      "clip": {
-        "type": "EffectClip",
-        "hash": "971246f206cd2879c0e497f9185456771a0443ee",
-        "url": "https://servers.purplepalette.net/repository/EffectClip/971246f206cd2879c0e497f9185456771a0443ee"
-      }
-    },
+[
     {
       "id": 100204,
       "clip": {
@@ -106,7 +25,4 @@
       "clip": {
         "type": "EffectClip",
         "url": "/repo/sounds/trace_flick.mp3"
-      }
-    }
-  ]
-}
+      } }]
