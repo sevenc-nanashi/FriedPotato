@@ -603,7 +603,7 @@ get "/official/levels/list" do
           artists: format_artist(level),
           cover: {
             type: :LevelCover,
-            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
+            url: "https://minio.dnaroma.eu/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
           },
           engine: {
             name: "category",
@@ -611,7 +611,7 @@ get "/official/levels/list" do
           },
           preview: {
             type: :LevelPreview,
-            url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+            url: "https://minio.dnaroma.eu/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
           },
         }
       end || [],
@@ -766,15 +766,15 @@ get %r{/official/levels/group-([^.]+)} do |name|
         author: "",
         cover: {
           type: :LevelCover,
-          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
+          url: "https://minio.dnaroma.eu/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
         },
         bgm: {
           type: :LevelBgm,
-          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
+          url: "https://minio.dnaroma.eu/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
         },
         preview: {
           type: :LevelPreview,
-          url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+          url: "https://minio.dnaroma.eu/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
         },
         data: {
           type: :LevelData,
@@ -802,7 +802,7 @@ get %r{/official/levels/group-([^.]+)} do |name|
       },
       preview: {
         type: :LevelPreview,
-        url: "https://sekai-res.dnaroma.eu/file/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+        url: "https://minio.dnaroma.eu/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
       },
     },
     description: <<~DESCRIPTION,
@@ -868,7 +868,7 @@ end
 
 get %r{/official/bgm/(.+)} do |name|
   next send_file("./dist/bgm/#{name}.mp3") if File.exist?("./dist/bgm/#{name}.mp3")
-  Open3.capture2e("ffmpeg", "-i", "https://sekai-res.dnaroma.eu/file/sekai-assets/music/long/#{name}_rip/#{name}.mp3", "-ss", "9", "./dist/bgm/#{name}.mp3")
+  Open3.capture2e("ffmpeg", "-i", "https://minio.dnaroma.eu/sekai-assets/music/long/#{name}_rip/#{name}.mp3", "-ss", "9", "./dist/bgm/#{name}.mp3")
   send_file("./dist/bgm/#{name}.mp3")
 end
 
