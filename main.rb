@@ -80,8 +80,8 @@ class Config
   end
 
   def load
-    @config = if File.exist?("./config.yml")
-        YAML.safe_load(File.read("./config.yml"), symbolize_names: true)
+    @config = if File.exist?("#{__dir__}/config.yml")
+        YAML.safe_load(File.read("#{__dir__}/config.yml"), symbolize_names: true)
       else
         {}
       end
@@ -1228,15 +1228,15 @@ unless $config.public
          \e[91m+---------------------------------------------+\e[m
          \e[91m|            FriedPotatoへようこそ！          |\e[m
          \e[91m+---------------------------------------------+\e[m
-         
+
          Sonolusを開き、サーバーのURLに以下を入力して下さい：
            \e[97mhttp://#{ip}:#{$config.port}\e[m
          テストサーバーの場合は以下のURLを入力して下さい：
            \e[97mhttp://#{ip}:#{$config.port}/tests/\e[m<テストサーバーID>
- 
- 
+
+
          \e[97mCtrl+C\e[m を押すと終了します。
- 
+
          Created by \e[96m名無し｡(@sevenc-nanashi)\e[m
        MESSAGE
   puts
