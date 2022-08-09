@@ -353,14 +353,20 @@ get "/" do
 end
 
 get "/sonolus/info" do
-  json({
-    levels: JSON.parse(File.read("./info_6.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
+  resp = {
+    levels: JSON.parse(File.read("./info_6.json"), symbolize_names: true).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
     skins: { items: [], search: {} },
     engines: { items: [], search: {} },
     backgrounds: { items: [], search: {} },
     effects: { items: [], search: {} },
     particles: { items: [], search: {} },
-  })
+  }
+  if params["localization"] == "en"
+    l = resp[:levels][:items][0]
+    l[:title] = "Sorry, but FriedPotato doesn't support 0.6.0"
+    l[:artists] = "I was dying because of vaccine..."
+  end
+  json resp
 end
 get "/info" do
   json({
