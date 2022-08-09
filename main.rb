@@ -355,6 +355,11 @@ end
 get "/sonolus/info" do
   json({
     levels: JSON.parse(File.read("./info_6.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
+    skins: { items: [], search: {} },
+    engines: { items: [], search: {} },
+    backgrounds: { items: [], search: {} },
+    effects: { items: [], search: {} },
+    particles: { items: [], search: {} },
   })
 end
 get "/info" do
