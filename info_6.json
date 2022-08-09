@@ -1,0 +1,41 @@
+[
+  {
+    "name": "frpt-system",
+    "version": 1,
+    "rating": 0,
+    "engine": {
+      "name": "frpt-message",
+      "version": 4,
+      "title": "（メッセージ）",
+      "subtitle": "（メッセージ用）",
+      "author": "名無し｡"
+    },
+    "useSkin": {
+      "useDefault": true
+    },
+    "useBackground": {
+      "useDefault": true
+    },
+    "useEffect": {
+      "useDefault": true
+    },
+    "useParticle": {
+      "useDefault": true
+    },
+    "title": "FriedPotatoはまだ0.6.0に対応していません。",
+    "artists": "副反応で開発できなかったんだ、許してくれ",
+    "author": "by 名無し｡",
+    "cover": {
+      "type": "LevelCover",
+      "url": "https://cdn.discordapp.com/attachments/939861558199197706/944402217262284850/white.apng"
+    },
+    "bgm": {
+      "type": "LevelBgm",
+      "url": "/repo/welcome.mp3"
+    },
+    "data": {
+      "type": "LevelData",
+      "url": "/repo/data.gz"
+    }
+  }
+]
