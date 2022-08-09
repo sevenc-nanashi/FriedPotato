@@ -352,6 +352,11 @@ get "/" do
   send_file "./public/index.html"
 end
 
+get "/sonolus/info" do
+  json({
+    levels: JSON.parse(File.read("./info_6.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
+  })
+end
 get "/info" do
   json({
     levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
