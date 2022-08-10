@@ -181,7 +181,6 @@ def modify_level!(level, extra, server)
                      hash: "e5f439916eac9bbd316276e20aed999993653560",
                      url: "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
         data: { type: "EffectData",
-                hash: get_file_hash("./public/repo/seconfig.gz"),
                 url: "/repo/seconfig.gz" },
       },
       particle: {
