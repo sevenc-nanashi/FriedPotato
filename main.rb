@@ -302,7 +302,7 @@ def modify_level!(level, extra, server)
     hash: get_file_hash("./public/repo/EffectAudio.zip"),
   }
   level[:engine][:effect][:author] = "Sonolus"
-  level[:engine][:particle][:name].insert(0, "frpt-")
+  level[:engine][:particle][:name] = "frpt-" + level[:engine][:particle][:name]
   level[:engine][:particle][:title] = "PJSekai"
   level[:engine][:particle][:subtitle] = "From servers.sonolus.com/pjsekai"
   level[:engine][:particle][:thumbnail][:url] = "https://servers.sonolus.net/pjsekai/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
@@ -335,7 +335,7 @@ def modify_level!(level, extra, server)
     },
   }
   level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
-  level[:name].insert(0, "frpt-")
+  level[:name] = "frpt-" + level[:name]
 end
 
 SEARCH_OPTION = [
