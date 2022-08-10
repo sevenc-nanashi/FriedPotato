@@ -369,7 +369,7 @@ get "/info" do
     effects: { items: [], search: {} },
     particles: { items: [], search: {} },
   }
-  if params["localization"] == "en"
+  if params["localization"] != "ja"
     l = resp[:levels][:items][0]
     l[:title] = "Sorry, but we don't support Sonolus under 0.6.0."
     l[:artists] = "Please update your Sonolus."
@@ -403,7 +403,7 @@ namespace "/sonolus" do
       particles: { items: [], search: {} },
       engines: { items: [], search: {} },
     }
-    if params["localization"] == "en"
+    if params["localization"] != "ja"
       l = resp[:levels][:items][0]
       l[:title] = "Welcome to FriedPotato!"
       l[:artists] = "Tap [More] to browse levels..."
@@ -510,7 +510,7 @@ get "/tests/:test_id/sonolus/info" do |test_id|
     effects: { items: [], search: {} },
     particles: { items: [], search: {} },
   }
-  if params["localization"] == "en"
+  if params["localization"] != "ja"
     l = resp[:levels][:items][0]
     l[:title] = "Welcome to FriedPotato!"
     l[:artists] = "You're on test server [#{test_id}]."
