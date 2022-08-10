@@ -380,7 +380,7 @@ end
 namespace "/sonolus" do
   get "/info" do
     resp = {
-      levels: { items: JSON.parse(File.read("./info.json")), search: { options: SEARCH_OPTION } },
+      levels: { items: JSON.parse(File.read("./info.json"), symbolize_names: true), search: { options: SEARCH_OPTION } },
       skins: {
         items: [
           {
