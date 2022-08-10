@@ -22,12 +22,12 @@
     "useParticle": {
       "useDefault": true
     },
-    "title": "FriedPotatoはまだ0.6.0に対応していません。",
-    "artists": "副反応で開発できなかったんだ、許してくれ",
+    "title": "FriedPotatoは0.5.13未満に対応していません。",
+    "artists": "Sonolusを0.6.0にアップデートして下さい。",
     "author": "by 名無し｡",
     "cover": {
       "type": "LevelCover",
-      "url": "https://cdn.discordapp.com/attachments/939861558199197706/944402217262284850/white.apng"
+      "url": ""
     },
     "bgm": {
       "type": "LevelBgm",

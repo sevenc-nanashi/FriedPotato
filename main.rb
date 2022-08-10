@@ -10,6 +10,7 @@ require "zlib"
 require "yaml"
 require "socket"
 require "open3"
+require "sinatra/namespace"
 # require "async"
 
 class Config
@@ -150,7 +151,7 @@ def modify_level!(level, extra, server)
   elsif level[:engine][:name] == "wbp-pjsekai"
     level[:engine] = {
       name: "pjsekai",
-      version: 5,
+      version: 6,
       title: "プロセカ（コンバーター）",
       subtitle: "プロジェクトセカイ カラフルステージ!",
       author: "Burrito",
@@ -247,7 +248,7 @@ def modify_level!(level, extra, server)
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
-  level[:engine][:version] = 5
+  level[:engine][:version] = 6
   if Dir.exist?("./overrides/#{name}")
     if File.exist?("./overrides/#{name}/thumbnail.png")
       level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
@@ -272,7 +273,7 @@ def modify_level!(level, extra, server)
     level[:engine][:configuration][:url] = "/engine/configuration"
     level[:engine][:configuration][:hash] = get_file_hash($config.engine_path + "/dist/EngineConfiguration")
   end
-  level[:engine][:skin][:name] = "pjsekai.extended"
+  level[:engine][:skin][:name] = "frpt-pjsekai.extended"
   level[:engine][:skin][:data][:url] = "/skin/data"
   skin_data_hash = get_file_hash("./skin/data.json")
   if File.exist?("./dist/skin/#{skin_data_hash}.gz")
@@ -289,18 +290,28 @@ def modify_level!(level, extra, server)
   level[:engine][:skin][:texture][:url] = "/skin/texture"
   level[:engine][:skin][:texture][:hash] = get_file_hash("./skin/texture.png")
   level[:engine][:effect][:title] = "PJSekai"
+  level[:engine][:effect][:version] = 3
   level[:engine][:effect][:subtitle] = "From servers.sonolus.com/pjsekai"
-  level[:engine][:effect][:thumbnail][:url] = "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+  level[:engine][:effect][:thumbnail][:url] = "https://servers.sonolus.net/pjsekai/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
   level[:engine][:effect][:thumbnail][:hash] = "e5f439916eac9bbd316276e20aed999993653560"
+  level[:engine][:effect][:name] = "frpt-pjsekai.fixed"
+  level[:engine][:effect][:data][:url] = "/repo/EffectData.gz"
+  level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/EffectData.gz")
+  level[:engine][:effect][:audio] = {
+    type: "EffectAudio",
+    url: "/repo/EffectAudio.zip",
+    hash: get_file_hash("./public/repo/EffectAudio.zip"),
+  }
   level[:engine][:effect][:author] = "Sonolus"
+  level[:engine][:particle][:name].insert(0, "frpt-")
   level[:engine][:particle][:title] = "PJSekai"
   level[:engine][:particle][:subtitle] = "From servers.sonolus.com/pjsekai"
-  level[:engine][:particle][:thumbnail][:url] = "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+  level[:engine][:particle][:thumbnail][:url] = "https://servers.sonolus.net/pjsekai/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
   level[:engine][:particle][:thumbnail][:hash] = "e5f439916eac9bbd316276e20aed999993653560"
   level[:engine][:particle][:author] = "Sonolus"
   level[:useBackground][:useDefault] = false
   level[:useBackground][:item] = {
-    name: level[:name],
+    name: "frpt-bg-#{level[:name]}",
     version: 2,
     title: level[:title],
     subtitle: "#{level[:artists]} / #{level[:author]}",
@@ -324,10 +335,8 @@ def modify_level!(level, extra, server)
       url: "/repo/config.gz",
     },
   }
-  level[:engine][:effect][:name] = "pjsekai.fixed"
-  level[:engine][:effect][:data][:url] = "/repo/seconfig.gz"
-  level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/seconfig.gz")
   level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+  level[:name].insert(0, "frpt-")
 end
 
 SEARCH_OPTION = [
@@ -352,9 +361,9 @@ get "/" do
   send_file "./public/index.html"
 end
 
-get "/sonolus/info" do
+get "/info" do
   resp = {
-    levels: JSON.parse(File.read("./info_6.json"), symbolize_names: true).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
+    levels: { items: JSON.parse(File.read("./info_old.json"), symbolize_names: true), search: { options: SEARCH_OPTION } },
     skins: { items: [], search: {} },
     engines: { items: [], search: {} },
     backgrounds: { items: [], search: {} },
@@ -363,61 +372,85 @@ get "/sonolus/info" do
   }
   if params["localization"] == "en"
     l = resp[:levels][:items][0]
-    l[:title] = "Sorry, but FriedPotato doesn't support 0.6.0"
-    l[:artists] = "I was dying because of vaccine..."
+    l[:title] = "Sorry, but we don't support Sonolus under 0.6.0."
+    l[:artists] = "Please update your Sonolus."
   end
   json resp
 end
-get "/info" do
-  json({
-    levels: JSON.parse(File.read("./info.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
-    skins: [
-      {
-        name: "info_bg",
-        title: "統計：背景画像数",
-        subtitle: Dir.glob("./dist/bg/*.png").size.to_s + "枚",
-      },
-      {
-        name: "info_conv",
-        title: "統計：変換された譜面数",
-        subtitle: Dir.glob("./dist/conv/*.gz").size.to_s + "個",
-      },
-    ],
-    backgrounds: {
-      search: { options: SEARCH_OPTION },
-    },
-    effects: [],
-    particles: [],
-    engines: [],
-  })
-end
 
-get "/tests/:test_id/info" do |test_id|
-  json({
-    levels: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id)).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
-    skins: [],
-    backgrounds: [],
-    effects: [],
-    particles: [],
-    engines: [],
-  })
-end
-get "/official/info" do
-  json({
-    levels: JSON.parse(File.read("./info_official.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
-    skins: [],
-    backgrounds: [],
-    effects: [],
-    particles: [],
-    engines: [],
-  })
-end
-get "/backgrounds/list" do
-  levels = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
-  res = {
-    pageCount: levels[:pageCount],
-    items: levels[:items].map do |level|
-      {
+namespace "/sonolus" do
+  get "/info" do
+    resp = {
+      levels: { items: JSON.parse(File.read("./info.json")), search: { options: SEARCH_OPTION } },
+      skins: {
+        items: [
+          {
+            name: "frpt-system",
+            title: "統計：背景画像数",
+            subtitle: Dir.glob("./dist/bg/*.png").size.to_s + "枚",
+          },
+          {
+            name: "frpt-system",
+            title: "統計：変換された譜面数",
+            subtitle: Dir.glob("./dist/conv/*.gz").size.to_s + "個",
+          },
+        ], search: {},
+      },
+      backgrounds: {
+        items: [],
+        search: { options: SEARCH_OPTION },
+      },
+      effects: { items: [], search: {} },
+      particles: { items: [], search: {} },
+      engines: { items: [], search: {} },
+    }
+    if params["localization"] == "en"
+      l = resp[:levels][:items][0]
+      l[:title] = "Welcome to FriedPotato!"
+      l[:artists] = "Tap [More] to browse levels..."
+    end
+    json resp
+  end
+
+  get "/backgrounds/list" do
+    levels = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page] })).body, symbolize_names: true)
+    res = {
+      pageCount: levels[:pageCount],
+      items: levels[:items].map do |level|
+        {
+          name: level[:name],
+          version: 2,
+          title: level[:title],
+          subtitle: "#{level[:artists]} / #{level[:author]}",
+          thumbnail: {
+            type: :BackgroundThumbnail,
+            url: "https://servers-legacy.purplepalette.net" + level[:cover][:url],
+          },
+          data: {
+            type: :BackgroundData,
+            url: "/repo/data.gz",
+          },
+          image: {
+            type: :BackgroundImage,
+            url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-",
+          },
+          configuration: {
+            type: :BackgroundConfiguration,
+            url: "/repo/config.gz",
+          },
+        }
+      end,
+      search: { options: SEARCH_OPTION },
+    }
+    json res
+  end
+
+  get "/backgrounds/:name" do |_name|
+    level = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
+    json({
+      description: level[:description],
+      recommended: [],
+      item: {
         name: level[:name],
         version: 2,
         title: level[:title],
@@ -438,40 +471,62 @@ get "/backgrounds/list" do
           type: :BackgroundConfiguration,
           url: "/repo/config.gz",
         },
-      }
-    end,
-    search: { options: SEARCH_OPTION },
+      },
+    })
+  end
+
+  get "/levels/list" do
+    ppdata = JSON.parse(
+      HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
+    )
+    if params[:keywords].nil? || params[:keywords].empty?
+      if ppdata[:items].length.zero?
+        levels = JSON.parse(
+          HTTP.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
+            .to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
+        )[:items].map do |data|
+          data[:data][:url] = "/local/#{data[:name]}/data.gz"
+          data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
+          data[:name] = "l_" + data[:name]
+
+          data
+        end
+        ppdata[:items] = levels
+      end
+      ppdata[:pageCount] += 1
+    end
+    ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
+    ppdata[:search] = {
+      options: SEARCH_OPTION,
+    }
+    json ppdata
+  end
+end
+get "/tests/:test_id/sonolus/info" do |test_id|
+  resp = {
+    levels: { items: JSON.parse(File.read("./info_test.json").sub("{test_id}", test_id), symbolize_names: true), search: { options: SEARCH_OPTION } },
+    skins: { items: [], search: {} },
+    engines: { items: [], search: {} },
+    backgrounds: { items: [], search: {} },
+    effects: { items: [], search: {} },
+    particles: { items: [], search: {} },
   }
-  json res
+  if params["localization"] == "en"
+    l = resp[:levels][:items][0]
+    l[:title] = "Welcome to FriedPotato!"
+    l[:artists] = "You're on test server [#{test_id}]."
+  end
+  json resp
 end
 
-get "/backgrounds/:name" do |_name|
-  level = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
+get "/official/info" do
   json({
-    description: level[:description],
-    recommended: [],
-    item: {
-      name: level[:name],
-      version: 2,
-      title: level[:title],
-      subtitle: "#{level[:artists]} / #{level[:author]}",
-      thumbnail: {
-        type: :BackgroundThumbnail,
-        url: "https://servers-legacy.purplepalette.net" + level[:cover][:url],
-      },
-      data: {
-        type: :BackgroundData,
-        url: "/repo/data.gz",
-      },
-      image: {
-        type: :BackgroundImage,
-        url: "/generate/#{level[:name]}_#{level[:cover][:hash]}-",
-      },
-      configuration: {
-        type: :BackgroundConfiguration,
-        url: "/repo/config.gz",
-      },
-    },
+    levels: JSON.parse(File.read("./info_official.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
+    skins: [],
+    backgrounds: [],
+    effects: [],
+    particles: [],
+    engines: [],
   })
 end
 
@@ -507,34 +562,7 @@ get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
   send_file "dist/bg/#{key}.png"
 end
 
-get "/levels/list" do
-  ppdata = JSON.parse(
-    HTTP.get("https://servers-legacy.purplepalette.net/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
-  )
-  if params[:keywords].nil? || params[:keywords].empty?
-    if ppdata[:items].length.zero?
-      levels = JSON.parse(
-        HTTP.get("https://raw.githubusercontent.com/PurplePalette/PurplePalette.github.io/0f37a15a672c95daae92f78953d59d05c3f01b5d/sonolus/levels/list").body
-          .to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
-      )[:items].map do |data|
-        data[:data][:url] = "/local/#{data[:name]}/data.gz"
-        data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
-        data[:name] = "l_" + data[:name]
-
-        data
-      end
-      ppdata[:items] = levels
-    end
-    ppdata[:pageCount] += 1
-  end
-  ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
-  ppdata[:search] = {
-    options: SEARCH_OPTION,
-  }
-  json ppdata
-end
-
-get "/tests/:test_id/levels/list" do |test_id|
+get "/tests/:test_id/sonolus/levels/list" do |test_id|
   ppdata = JSON.parse(
     HTTP.get("https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" + URI.encode_www_form({ keywords: params[:keywords], page: params[:page].to_i }).gsub("+", "%20")).body.to_s.gsub('"/', '"https://servers-legacy.purplepalette.net/'), symbolize_names: true,
   )
@@ -549,7 +577,7 @@ get %r{(?:/tests/[^/]+|/official)?/levels/(Welcome%21|About|system)} do
   json({ item: JSON.load_file("./unavailable.json") })
 end
 
-get %r{(?:/tests/[^/]+)?/levels/([^.]+)(?:\.(.+))?} do |name, suffix|
+get %r{(?:/tests/[^/]+)?/sonolus/levels/frpt-([^.]+)(?:\.(.+))?} do |name, suffix|
   level_raw = if name.start_with?("l_")
       HTTP.get("https://PurplePalette.github.io/sonolus/levels/#{name[2..].gsub(" ", "%20")}").body.to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/')
     else
@@ -1097,37 +1125,36 @@ get %r{(?:/tests/.+)?/convert/(.+)} do |name|
   send_file "./dist/conv/#{name}.gz"
 end
 
-get %r{(?:/tests/.+)?/overrides/(.+)} do |path|
+get "overrides/:path" do |path|
   send_file "./overrides/#{path}"
 end
 
-get %r{(?:/tests/([^/]+))?/repo/(.+)} do |_name, path|
-  redirect "/repo/#{path}"
-end
-
-get %r{(?:/tests/([^/]+))?/data-overrides/(.+)} do |_name, path|
-  send_file "./dist/data-overrides/#{path}"
-end
-
-get %r{(?:/tests/([^/]+))?/skin/texture} do |_name|
-  send_file "./skin/texture.png"
-end
-
-get %r{(?:/tests/([^/]+))?/skin/data} do |_name|
-  hash = get_file_hash("./skin/data.json")
-  unless File.exist?("./dist/skin/#{hash}.gz")
-    Zlib::GzipWriter.open("./dist/skin/#{hash}.gz") do |gz|
-      gz.write(File.read("./skin/data.json", mode: "rb"))
-    end
+namespace %r{(?:/tests/([^/]+))?} do
+  get %r{/data-overrides/(.+)} do |_name, path|
+    send_file "./dist/data-overrides/#{path}"
   end
-  send_file "./dist/skin/#{hash}.gz"
-end
 
-get %r{(?:/tests/([^/]+))?/engine/data} do |_name|
-  send_file $config.engine_path + "/dist/EngineData"
-end
-get %r{(?:/tests/([^/]+))?/engine/configuration} do |_name|
-  send_file $config.engine_path + "/dist/EngineConfiguration"
+  get %r{/skin/texture} do |_name|
+    send_file "./skin/texture.png"
+  end
+
+  get %r{/skin/data} do |_name|
+    hash = get_file_hash("./skin/data.json")
+    unless File.exist?("./dist/skin/#{hash}.gz")
+      Zlib::GzipWriter.open("./dist/skin/#{hash}.gz") do |gz|
+        gz.write(File.read("./skin/data.json", mode: "rb"))
+      end
+    end
+    send_file "./dist/skin/#{hash}.gz"
+  end
+
+  get %r{/engine/data} do |_name|
+    send_file $config.engine_path + "/dist/EngineData"
+  end
+
+  get %r{/engine/configuration} do |_name|
+    send_file $config.engine_path + "/dist/EngineConfiguration"
+  end
 end
 
 get "/skins/list" do
