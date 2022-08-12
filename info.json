@@ -10,20 +10,8 @@
       "subtitle": "（メッセージ用）",
       "author": "名無し｡"
     },
-    "useSkin": {
-      "useDefault": true
-    },
-    "useBackground": {
-      "useDefault": true
-    },
-    "useEffect": {
-      "useDefault": true
-    },
-    "useParticle": {
-      "useDefault": true
-    },
     "title": "FriedPotatoへようこそ！",
-    "artists": "「もっと」ボタンで譜面を表示します。",
+    "artists": "https://github.com/sevenc-nanashi/FriedPotato にてソースが公開されています！",
     "author": "by 名無し｡",
     "cover": {
       "type": "LevelCover",
@@ -31,11 +19,38 @@
     },
     "bgm": {
       "type": "LevelBgm",
-      "url": "/repo/welcome.mp3"
+      "url": ""
     },
     "data": {
       "type": "LevelData",
-      "url": "/repo/data.gz"
+      "url": ""
+    }
+  },
+  {
+    "name": "frpt-system",
+    "version": 1,
+    "rating": 0,
+    "engine": {
+      "name": "frpt-message",
+      "version": 4,
+      "title": "（メッセージ）",
+      "subtitle": "（メッセージ用）",
+      "author": "名無し｡"
+    },
+    "title": "下の「もっと」ボタンで譜面を表示します。",
+    "artists": " ",
+    "author": "by 名無し｡",
+    "cover": {
+      "type": "LevelCover",
+      "url": ""
+    },
+    "bgm": {
+      "type": "LevelBgm",
+      "url": ""
+    },
+    "data": {
+      "type": "LevelData",
+      "url": ""
     }
   }
 ]

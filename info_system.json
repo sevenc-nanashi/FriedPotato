@@ -1,0 +1,27 @@
+{
+  "name": "frpt-system",
+  "version": 1,
+  "rating": 0,
+  "engine": {
+    "name": "frpt-message",
+    "version": 4,
+    "title": "（メッセージ）",
+    "subtitle": "（メッセージ用）",
+    "author": "名無し｡"
+  },
+  "title": "このレベルはプレイできません！",
+  "artists": "このレベルはメッセージの表示をするためだけに作られています。",
+  "author": "by 名無し｡",
+  "cover": {
+    "type": "LevelCover",
+    "url": ""
+  },
+  "bgm": {
+    "type": "LevelBgm",
+    "url": ""
+  },
+  "data": {
+    "type": "LevelData",
+    "url": ""
+  }
+}

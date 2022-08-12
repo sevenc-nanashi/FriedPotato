@@ -406,7 +406,9 @@ namespace "/sonolus" do
     if params["localization"] != "ja"
       l = resp[:levels][:items][0]
       l[:title] = "Welcome to FriedPotato!"
-      l[:artists] = "Tap [More] to browse levels..."
+      l[:artists] = "The source is open at https://github.com/sevenc-nanashi/FriedPotato"
+      l = resp[:levels][:items][1]
+      l[:title] = "Tap [More] button below to browse levels..."
     end
     json resp
   end
@@ -529,6 +531,15 @@ get "/official/info" do
   })
 end
 
+get %r{(?:/tests/[^/]+|/official)?/sonolus/levels/frpt-system} do
+  item = JSON.load_file("./info_system.json", symbolize_names: true)
+  if params["localization"] != "ja"
+    item[:title] = "This level is not playable!"
+    item[:artists] = "This level is only used to show message. Please go back and do something else."
+  end
+  json({ item: item })
+end
+
 get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
   modifier = key.split("-")[1] || ""
   unless File.exist?("dist/bg/#{key}.png")
@@ -570,10 +581,6 @@ get "/tests/:test_id/sonolus/levels/list" do |test_id|
     options: SEARCH_OPTION,
   }
   json ppdata
-end
-
-get %r{(?:/tests/[^/]+|/official)?/levels/(Welcome%21|About|system)} do
-  json({ item: JSON.load_file("./unavailable.json") })
 end
 
 get %r{(?:/tests/[^/]+)?/sonolus/levels/frpt-([^.]+)(?:\.(.+))?} do |name, suffix|
