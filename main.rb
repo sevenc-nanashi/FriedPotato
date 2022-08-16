@@ -348,6 +348,7 @@ SEARCH_OPTION = [
 ].freeze
 
 set :bind, "0.0.0.0"
+set :show_exceptions, development?
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
   set :port, ENV["PORT"]
