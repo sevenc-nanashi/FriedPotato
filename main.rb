@@ -115,6 +115,34 @@ def start_python
   Open3.popen2({ "PORT" => $config.python_port.to_s }, "../.venv/Scripts/python.exe ./main.py", chdir: "bg_gen_python")
 end
 
+def load_datafile(path)
+  data = File.read("./data/#{path}.json")
+  data.gsub!(/"!import:(.+?)"/) do |match|
+    File.read("./data/#{Regexp.last_match[1]}")
+  end
+  JSON.parse(data, symbolize_names: true)
+end
+
+def load_engine()
+  base = load_datafile("engines/frpt-pjsekai.extended")
+  if Dir.exist?($config.engine_path)
+    base[:data][:url] = "/engine/data"
+    base[:data][:hash] = get_file_hash($config.engine_path + "/dist/EngineData")
+    base[:configuration][:url] = "/engine/configuration"
+    base[:configuration][:hash] = get_file_hash($config.engine_path + "/dist/EngineConfiguration")
+  end
+  base[:skin][:name] = "frpt-pjsekai.extended"
+  base[:skin][:data][:url] = "/skin/data"
+  skin_data_hash = get_file_hash("./skin/data.json")
+  if File.exist?("./dist/skin/#{skin_data_hash}.gz")
+    base[:skin][:data][:hash] = get_file_hash("./dist/skin/#{skin_data_hash}.gz")
+  else
+    base[:skin][:data].delete(:hash)
+  end
+
+  base
+end
+
 if ENV["DOCKER"] == "true"
   $config.public = true
   $config.engine_path = "./engine"
@@ -142,6 +170,7 @@ end
 def modify_level!(level, extra, server)
   name = level[:name]
   modifier = ""
+  extra_name = nil
   if server == :official
     bgm_id = level[:bgm][:url].split("/")[-1].split(".")[0]
     level[:data][:url] = "/shift/#{level[:name]}"
@@ -149,89 +178,16 @@ def modify_level!(level, extra, server)
     level[:bgm][:url] = "/bgm/#{bgm_id}"
     level[:name].insert(0, "level-")
   elsif level[:engine][:name] == "wbp-pjsekai"
-    level[:engine] = {
-      name: "pjsekai",
-      version: 6,
-      title: "プロセカ（コンバーター）",
-      subtitle: "プロジェクトセカイ カラフルステージ!",
-      author: "Burrito",
-      skin: {
-        name: "pjsekai.classic",
-        version: 2,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "SkinThumbnail",
-                     hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
-                     url: "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289" },
-        data: { type: "SkinData",
-                hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-                url: "https://servers-legacy.purplepalette.net/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af" },
-        texture: { type: "SkinTexture",
-                   hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-                   url: "https://servers-legacy.purplepalette.net/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c" },
-      },
-      effect: {
-        name: "pjsekai.fixed",
-        version: 2,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "EffectThumbnail",
-                     hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
-        data: { type: "EffectData",
-                url: "/repo/seconfig.gz" },
-      },
-      particle: {
-        name: "pjsekai.classic",
-        version: 1,
-        title: "Project Sekai",
-        subtitle: "Project Sekai: Colorful Stage!",
-        author: "Sonolus",
-        thumbnail: { type: "ParticleThumbnail",
-                     hash: "e5f439916eac9bbd316276e20aed999993653560",
-                     url: "https://servers-legacy.purplepalette.net/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560" },
-        data: { type: "ParticleData",
-                hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
-                url: "https://servers-legacy.purplepalette.net/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8" },
-        texture: { type: "ParticleTexture",
-                   hash: "4850a8f335204108c439def535bcf693c7f8d050",
-                   url: "https://servers-legacy.purplepalette.net/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050" },
-      },
-      thumbnail: {
-        type: "EngineThumbnail",
-        hash: "e5f439916eac9bbd316276e20aed999993653560",
-        url: "https://servers-legacy.purplepalette.net/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
-      },
-      data: {
-        type: "EngineData",
-        hash: "86773c786f00b8b6cd2f6f99be11f62281385133",
-        url: "https://servers-legacy.purplepalette.net/repository/EngineData/86773c786f00b8b6cd2f6f99be11f62281385133",
-      },
-      configuration: {
-        type: "EngineConfiguration",
-        hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-        url: "https://servers-legacy.purplepalette.net/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-      },
-    }
     level[:useBackground] = {}
     level[:data][:url] = "/convert/#{level[:name]}"
+    extra_name = " @ Converter"
+
     level[:data].delete(:hash)
     level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exist?("./convert/#{level[:name]}.gz")
   elsif level[:engine][:name] == "psekai"
     level[:data][:url] = "/convert/l_#{level[:name]}"
-    level[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
     level[:name] = "l_" + level[:name]
-
-    level[:engine] = JSON.parse(
-      File.read("./convert-engine.json")
-        .gsub("!name!", level[:name])
-        .gsub("!artists!", level[:artists])
-        .gsub("!author!", level[:author])
-        .gsub("!title!", level[:title]),
-      symbolize_names: true,
-    )
+    extra_name = " @ Old server"
   else
     level[:data][:url] = "/modify/#{level[:name]}-#{level[:data][:hash]}"
     if File.exist?("dist/modify/#{level[:data][:hash]}.gz")
@@ -247,7 +203,9 @@ def modify_level!(level, extra, server)
     level[:title] += " (Extra)"
     level[:name] += ".extra"
   end
-  level[:engine][:version] = 6
+  level[:engine] = load_engine()
+  level[:engine][:title] += extra_name if extra_name
+
   if Dir.exist?("./overrides/#{name}")
     if File.exist?("./overrides/#{name}/thumbnail.png")
       level[:cover][:url] = "/overrides/#{name}/thumbnail.png"
@@ -266,48 +224,7 @@ def modify_level!(level, extra, server)
       level[:data][:hash] = get_file_hash("./dist/data-overrides/#{json_hash}.gz")
     end
   end
-  if Dir.exist?($config.engine_path)
-    level[:engine][:data][:url] = "/engine/data"
-    level[:engine][:data][:hash] = get_file_hash($config.engine_path + "/dist/EngineData")
-    level[:engine][:configuration][:url] = "/engine/configuration"
-    level[:engine][:configuration][:hash] = get_file_hash($config.engine_path + "/dist/EngineConfiguration")
-  end
-  level[:engine][:skin][:name] = "frpt-pjsekai.extended"
-  level[:engine][:skin][:data][:url] = "/skin/data"
-  skin_data_hash = get_file_hash("./skin/data.json")
-  if File.exist?("./dist/skin/#{skin_data_hash}.gz")
-    level[:engine][:skin][:data][:hash] = get_file_hash("./dist/skin/#{skin_data_hash}.gz")
-  else
-    level[:engine][:skin][:data].delete(:hash)
-  end
 
-  level[:engine][:skin][:title] = "PJSekai+"
-  level[:engine][:skin][:thumbnail][:url] = "https://servers.sonolus.com/pjsekai/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
-  level[:engine][:skin][:thumbnail][:hash] = "24faf30cc2e0d0f51aeca3815ef523306b627289"
-  level[:engine][:skin][:author] = "Sonolus + Nanashi."
-  level[:engine][:skin][:subtitle] = "PJSekai Extended"
-  level[:engine][:skin][:texture][:url] = "/skin/texture"
-  level[:engine][:skin][:texture][:hash] = get_file_hash("./skin/texture.png")
-  level[:engine][:effect][:title] = "PJSekai"
-  level[:engine][:effect][:version] = 3
-  level[:engine][:effect][:subtitle] = "From servers.sonolus.com/pjsekai"
-  level[:engine][:effect][:thumbnail][:url] = "https://servers.sonolus.net/pjsekai/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
-  level[:engine][:effect][:thumbnail][:hash] = "e5f439916eac9bbd316276e20aed999993653560"
-  level[:engine][:effect][:name] = "frpt-pjsekai.fixed"
-  level[:engine][:effect][:data][:url] = "/repo/EffectData.gz"
-  level[:engine][:effect][:data][:hash] = get_file_hash("./public/repo/EffectData.gz")
-  level[:engine][:effect][:audio] = {
-    type: "EffectAudio",
-    url: "/repo/EffectAudio.zip",
-    hash: get_file_hash("./public/repo/EffectAudio.zip"),
-  }
-  level[:engine][:effect][:author] = "Sonolus"
-  level[:engine][:particle][:name] = "frpt-" + level[:engine][:particle][:name]
-  level[:engine][:particle][:title] = "PJSekai"
-  level[:engine][:particle][:subtitle] = "From servers.sonolus.com/pjsekai"
-  level[:engine][:particle][:thumbnail][:url] = "https://servers.sonolus.net/pjsekai/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
-  level[:engine][:particle][:thumbnail][:hash] = "e5f439916eac9bbd316276e20aed999993653560"
-  level[:engine][:particle][:author] = "Sonolus"
   level[:useBackground][:useDefault] = false
   level[:useBackground][:item] = {
     name: "frpt-bg-#{level[:name]}",
@@ -420,7 +337,7 @@ namespace "/sonolus" do
       pageCount: levels[:pageCount],
       items: levels[:items].map do |level|
         {
-          name: level[:name],
+          name: "frpt-bg-" + level[:name],
           version: 2,
           title: level[:title],
           subtitle: "#{level[:artists]} / #{level[:author]}",
@@ -447,13 +364,13 @@ namespace "/sonolus" do
     json res
   end
 
-  get "/backgrounds/:name" do |_name|
-    level = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/#{params[:name]}").body, symbolize_names: true)[:item]
+  get %r{/backgrounds/frpt-bg-([^.]+)} do |name|
+    level = JSON.parse(HTTP.get("https://servers-legacy.purplepalette.net/levels/#{name}").body, symbolize_names: true)[:item]
     json({
       description: level[:description],
       recommended: [],
       item: {
-        name: level[:name],
+        name: "frpt-bg-" + level[:name],
         version: 2,
         title: level[:title],
         subtitle: "#{level[:artists]} / #{level[:author]}",
@@ -488,7 +405,6 @@ namespace "/sonolus" do
             .to_s.gsub('"/', '"https://PurplePalette.github.io/sonolus/'), symbolize_names: true,
         )[:items].map do |data|
           data[:data][:url] = "/local/#{data[:name]}/data.gz"
-          data[:engine] = JSON.parse(File.read("./convert-engine.json"), symbolize_names: true)
           data[:name] = "l_" + data[:name]
 
           data
@@ -502,6 +418,22 @@ namespace "/sonolus" do
       options: SEARCH_OPTION,
     }
     json ppdata
+  end
+
+  get %r{/(effects|particles|engines|skins)/list} do |type|
+    json({
+      pageCount: 1,
+      items: Dir.glob("./data/#{type}/*.json").map { |f| load_datafile(f.sub("./data/", "").sub(".json", "")) },
+    })
+  end
+
+  get %r{/(effects|particles|engines|skins)/(.+)} do |type, name|
+    data = load_datafile("#{type}/#{name}")
+    json({
+      item: data,
+      description: data[:description],
+      recommended: [],
+    })
   end
 end
 get "/tests/:test_id/sonolus/info" do |test_id|
@@ -1162,64 +1094,6 @@ namespace %r{(?:/tests/([^/]+))?} do
   get %r{/engine/configuration} do |_name|
     send_file $config.engine_path + "/dist/EngineConfiguration"
   end
-end
-
-get "/skins/list" do
-  <<~JSON
-    {
-      "pageCount": 1,
-      "items": [
-        {
-          "author": "Sonolus",
-          "data": {
-              "type": "SkinData",
-              "url": "/skin/data"
-          },
-          "name": "pjsekai.extended",
-          "subtitle": "Project Sekai: Colorful Stage!",
-          "texture": {
-              "type": "SkinTexture",
-              "url": "/skin/texture"
-          },
-          "thumbnail": {
-              "type": "SkinThumbnail",
-              "url": "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
-          },
-          "title": "Project Sekai",
-          "version": 2
-        }
-      ]
-    }
-  JSON
-end
-
-get "/skins/pjsekai.extended" do
-  <<~JSON
-    {
-      "item": {
-        "author": "Sonolus",
-        "data": {
-            "type": "SkinData",
-            "url": "/skin/data"
-        },
-        "name": "pjsekai.extended",
-        "subtitle": "Project Sekai: Colorful Stage!",
-        "texture": {
-            "type": "SkinTexture",
-            "url": "/skin/texture"
-        },
-        "thumbnail": {
-            "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
-            "type": "SkinThumbnail",
-            "url": "https://servers-legacy.purplepalette.net/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
-        },
-        "title": "Project Sekai",
-        "version": 2
-      },
-      "description": "PjSekai + Trace notes",
-      "recommended": []
-    }
-  JSON
 end
 
 get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |_name, level, hash|

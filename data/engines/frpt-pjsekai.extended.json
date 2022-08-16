@@ -1,0 +1,53 @@
+{
+  "author": "Burrito",
+  "background": {
+    "author": "Sonolus",
+    "configuration": {
+      "hash": "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
+      "type": "BackgroundConfiguration",
+      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7"
+    },
+    "data": {
+      "hash": "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
+      "type": "BackgroundData",
+      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2"
+    },
+    "image": {
+      "hash": "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
+      "type": "BackgroundImage",
+      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db"
+    },
+    "name": "pjsekai",
+    "subtitle": "プロジェクトセカイ カラフルステージ!",
+    "thumbnail": {
+      "hash": "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
+      "type": "BackgroundThumbnail",
+      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90"
+    },
+    "title": "Live",
+    "version": 2
+  },
+  "configuration": {
+    "hash": "cb325b7b2225d96e2eff1e9942c96bef85270ac3ec8f807318f605731f07f27a",
+    "type": "EngineConfiguration",
+    "url": "/engine/configuration"
+  },
+  "data": {
+    "hash": "3784971ff2b869cc405871b8f2488c07d8547fc33427abfe8e5885ea9aa9afb8",
+    "type": "EngineData",
+    "url": "/engine/data"
+  },
+  "name": "frpt-pjsekai.extended",
+  "particle": "!import:particles/frpt-pjsekai.json",
+  "skin": "!import:skins/frpt-pjsekai.extended.json",
+  "effect": "!import:effects/frpt-pjsekai.fixed.json",
+  "description": "PJSekai + Trace notes, custom judgement, etc.",
+  "subtitle": "From servers.sonolus.com/pjsekai",
+  "thumbnail": {
+    "hash": "e5f439916eac9bbd316276e20aed999993653560",
+    "type": "EngineThumbnail",
+    "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+  },
+  "title": "PJSekai+",
+  "version": 6
+}

@@ -1,0 +1,23 @@
+{
+  "audio": {
+    "hash": "978a6f1cc1e93700acf1e227eeef231a59ca47bd8162f0ad4826a1b8ce4514b7",
+    "type": "EffectAudio",
+    "url": "/repo/EffectAudio.zip"
+  },
+  "author": "Sonolus",
+  "data": {
+    "hash": "9b1fa72565dfc8277ebf3a7f592ba2c4cd6a142b8360960d844a5cb5600bb7d2",
+    "type": "EffectData",
+    "url": "/repo/EffectData.gz"
+  },
+  "name": "frpt-pjsekai.fixed",
+  "subtitle": "From servers.sonolus.com/pjsekai",
+  "description": "PJSekai + Trace notes",
+  "thumbnail": {
+    "hash": "e5f439916eac9bbd316276e20aed999993653560",
+    "type": "EffectThumbnail",
+    "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+  },
+  "title": "PJSekai",
+  "version": 3
+}

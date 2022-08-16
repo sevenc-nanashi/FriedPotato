@@ -1,0 +1,23 @@
+{
+  "author": "Sonolus + Nanashi.",
+  "data": {
+    "hash": "e6c48925a0947ebe80458525ec0932453edfe52e434b6774e564c260da9e59d7",
+    "type": "SkinData",
+    "url": "/skin/data"
+  },
+  "name": "frpt-pjsekai.extended",
+  "subtitle": "PJSekai Extended",
+  "description": "PjSekai + Trace notes",
+  "texture": {
+    "hash": "22004dc0538b0df80ca7ec54186c6b385d3f6f0cdcc46527167bf1a99876d862",
+    "type": "SkinTexture",
+    "url": "/skin/texture"
+  },
+  "thumbnail": {
+    "hash": "24faf30cc2e0d0f51aeca3815ef523306b627289",
+    "type": "SkinThumbnail",
+    "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289"
+  },
+  "title": "PJSekai+",
+  "version": 2
+}
