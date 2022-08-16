@@ -116,7 +116,7 @@ def start_python
 end
 
 if ENV["DOCKER"] == "true"
-  $config.public = true if ENV["PUBLIC"] == "true"
+  $config.public = true
   $config.engine_path = "./engine"
   $config.background_engine = "web"
 end
