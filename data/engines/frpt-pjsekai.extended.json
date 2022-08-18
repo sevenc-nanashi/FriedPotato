@@ -5,24 +5,24 @@
     "configuration": {
       "hash": "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
       "type": "BackgroundConfiguration",
-      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7"
+      "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7"
     },
     "data": {
       "hash": "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
       "type": "BackgroundData",
-      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2"
+      "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2"
     },
     "image": {
       "hash": "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
       "type": "BackgroundImage",
-      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db"
+      "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db"
     },
     "name": "pjsekai",
     "subtitle": "プロジェクトセカイ カラフルステージ!",
     "thumbnail": {
       "hash": "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
       "type": "BackgroundThumbnail",
-      "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90"
+      "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90"
     },
     "title": "Live",
     "version": 2
@@ -46,7 +46,7 @@
   "thumbnail": {
     "hash": "e5f439916eac9bbd316276e20aed999993653560",
     "type": "EngineThumbnail",
-    "url": "https://servers.sonolus.com/pjsekai-backup/sonolus/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+    "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560"
   },
   "title": "PJSekai+",
   "version": 6

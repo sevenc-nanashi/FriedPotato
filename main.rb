@@ -448,20 +448,9 @@ get "/tests/:test_id/sonolus/info" do |test_id|
   if params["localization"] != "ja"
     l = resp[:levels][:items][0]
     l[:title] = "Welcome to FriedPotato!"
-    l[:artists] = "You're on test server [#{test_id}]."
+    l[:artists] = "You're on test server [#{test_id}]. Tap [More] button below to browse levels..."
   end
   json resp
-end
-
-get "/official/info" do
-  json({
-    levels: JSON.parse(File.read("./info_official.json")).then { |i| $config.sonolus_5_10 ? { items: i, search: { options: SEARCH_OPTION } } : i },
-    skins: [],
-    backgrounds: [],
-    effects: [],
-    particles: [],
-    engines: [],
-  })
 end
 
 get %r{(?:/tests/[^/]+|/official)?/sonolus/levels/frpt-system} do
@@ -567,332 +556,258 @@ get %r{(?:/tests/[^/]+)?/sonolus/levels/frpt-([^.]+)(?:\.(.+))?} do |name, suffi
   json level_hash
 end
 
-get "/official/levels/list" do
-  levels = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
-    .filter { |l| l[:publishedAt] < Time.now.to_i * 1000 }
-    .filter { |l| params[:keywords] ? params[:keywords].split.all? { |k| l[:title].downcase.include?(k.downcase) } : true }
-    .sort_by { |l| -l[:publishedAt] }
-  vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
-  json(
-    {
-      items: levels[20 * params[:page].to_i, 20]&.map do |level|
-        level_vocals = vocals.filter { |v| v[:musicId] == level[:id] }
-        preview_id = level_vocals.first[:assetbundleName]
+namespace %r{/(?:official|pjsekai)} do
+  namespace "/sonolus" do
+    get "/info" do
+      resp = {
+        levels: { items: JSON.parse(File.read("./info_official.json"), symbolize_names: true), search: { options: SEARCH_OPTION } },
+        skins: { items: [], search: {} },
+        engines: { items: [], search: {} },
+        backgrounds: { items: [], search: {} },
+        effects: { items: [], search: {} },
+        particles: { items: [], search: {} },
+      }
+      if params["localization"] != "ja"
+        l = resp[:levels][:items][0]
+        l[:title] = "Welcome to FriedPotato!"
+        l[:artists] = "You're on Official Charts server (aka. /pjsekai). Tap [More] button below to browse levels..."
+      end
+      json resp
+    end
+
+    get "/levels/list" do
+      levels = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
+        .filter { |l| l[:publishedAt] < Time.now.to_i * 1000 }
+        .filter { |l| params[:keywords] ? params[:keywords].split.all? { |k| l[:title].downcase.include?(k.downcase) } : true }
+        .sort_by { |l| -l[:publishedAt] }
+      vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
+      json(
         {
+          items: levels[20 * params[:page].to_i, 20]&.map do |level|
+            level_vocals = vocals.filter { |v| v[:musicId] == level[:id] }
+            preview_id = level_vocals.first[:assetbundleName]
+            {
+              name: "group-#{level[:id]}",
+              version: 1,
+              rating: level_vocals.length,
+              title: level[:title],
+              artists: format_artist(level),
+              cover: {
+                type: :LevelCover,
+                url: "https://storage.sekai.best/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
+              },
+              engine: {
+                name: "category",
+                title: "-",
+              },
+              preview: {
+                type: :LevelPreview,
+                url: "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+              },
+            }
+          end || [],
+          pageCount: (levels.length / 20.0).ceil,
+          search: { options: SEARCH_OPTION },
+        }
+      )
+    end
+
+    get %r{/levels/group-([^.]+)} do |name|
+      level = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
+        .find { |l| l[:id] == name.to_i }
+      vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
+        .filter { |v| v[:musicId] == name.to_i }
+      difficulties = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicDifficulties.json"), symbolize_names: true)
+        .filter { |d| d[:musicId] == name.to_i }
+      preview_id = vocals.first[:assetbundleName]
+      engine = load_engine()
+
+      levels = vocals.map do |vocal|
+        difficulties.reverse.map do |difficulty|
+          {
+            name: "#{level[:id]}-#{vocal[:id]}-#{difficulty[:musicDifficulty]}",
+            version: 1,
+            rating: difficulty[:playLevel],
+            engine: engine,
+            useSkin: {
+              useDefault: true,
+            },
+            useBackground: {
+              useDefault: true,
+            },
+            useEffect: {
+              useDefault: true,
+            },
+            useParticle: {
+              useDefault: true,
+            },
+            title: "#{difficulty[:musicDifficulty].capitalize} - #{vocal[:caption]}",
+            artists: vocal[:characters]
+              .map { |c| c[:characterType] == "game_character" ? OFFICIAL_CHARACTERS[c[:characterId]] : OUTSIDE_CHARACTERS[c[:characterId]] }
+              .map { |c| c[:name] || "#{c[:firstName]} #{c[:givenName]}".strip }
+              .join(" & ").then { |s| s.empty? ? "-" : s },
+            author: "",
+            cover: {
+              type: :LevelCover,
+              url: "https://storage.sekai.best/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
+            },
+            bgm: {
+              type: :LevelBgm,
+              url: "https://storage.sekai.best/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
+            },
+            preview: {
+              type: :LevelPreview,
+              url: "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
+            },
+            data: {
+              type: :LevelData,
+              url: "/levels/#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}/data?0.1.0-beta.11",
+            },
+          }.tap { |l| modify_level!(l, false, :official) }
+        end
+      end.flatten
+      json({
+        item: {
           name: "group-#{level[:id]}",
           version: 1,
-          rating: level_vocals.length,
+          rating: vocals.length,
           title: level[:title],
           artists: format_artist(level),
+          author: "-",
           cover: {
             type: :LevelCover,
-            url: "https://storage.sekai.best/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
+            hash: get_file_hash("./public/repo/folder.png"),
+            url: "/repo/folder.png",
           },
           engine: {
             name: "category",
-            title: "曲選択",
+            title: "-",
           },
           preview: {
             type: :LevelPreview,
             url: "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
           },
-        }
-      end || [],
-      pageCount: (levels.length / 20.0).ceil,
-      search: { options: SEARCH_OPTION },
-    }
-  )
-end
+        },
+        description: (params[:localization] == "ja" ? (<<~DESC
+          作詞：#{level[:lyricist]}
+          作曲：#{level[:composer]}
+          編曲：#{level[:arranger]}
 
-get %r{/official/levels/group-([^.]+)} do |name|
-  level = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
-    .find { |l| l[:id] == name.to_i }
-  vocals = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicVocals.json"), symbolize_names: true)
-    .filter { |v| v[:musicId] == name.to_i }
-  difficulties = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musicDifficulties.json"), symbolize_names: true)
-    .filter { |d| d[:musicId] == name.to_i }
-  preview_id = vocals.first[:assetbundleName]
+          追加日時：#{Time.at(level[:publishedAt] / 1000, in: "+09:00").strftime("%Y/%m/%d %H:%M:%S")}
+        DESC
+) : (<<~DESC
+          Lyrics: #{level[:lyricist]}
+          Music: #{level[:composer]}
+          Arrangement: #{level[:arranger]}
 
-  levels = vocals.map do |vocal|
-    difficulties.reverse.map do |difficulty|
-      {
-        name: "#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}",
-        version: 1,
-        rating: difficulty[:playLevel],
-        engine: {
-          name: "pjsekai",
-          version: 4,
-          title: "プロセカ",
-          subtitle: "プロジェクトセカイ カラフルステージ!",
-          author: "Burrito",
-          skin: {
-            name: "pjsekai.classic",
-            version: 2,
-            title: "プロセカ",
-            subtitle: "プロジェクトセカイ カラフルステージ!",
-            author: "Sonolus",
-            thumbnail: {
-              type: :SkinThumbnail,
-              hash: "24faf30cc2e0d0f51aeca3815ef523306b627289",
-              url: "/repository/SkinThumbnail/24faf30cc2e0d0f51aeca3815ef523306b627289",
-            },
-            data: {
-              type: :SkinData,
-              hash: "ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-              url: "/repository/SkinData/ad8a6ffa2ef4f742fee5ec3b917933cc3d2654af",
-            },
-            texture: {
-              type: :SkinTexture,
-              hash: "2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-              url: "/repository/SkinTexture/2ed3b0d09918f89e167df8b2f17ad8601162c33c",
-            },
-          },
-          background: {
-            name: "pjsekai.live",
-            version: 2,
-            title: "Live",
-            subtitle: "プロジェクトセカイ カラフルステージ!",
-            author: "Sonolus",
-            thumbnail: {
-              type: :BackgroundThumbnail,
-              hash: "bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
-              url: "/repository/BackgroundThumbnail/bc97c960f8cb509ed17ebfe7f15bf2a089a98b90",
-            },
-            data: {
-              type: :BackgroundData,
-              hash: "5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
-              url: "/repository/BackgroundData/5e32e7fc235b0952da1b7aa0a03e7745e1a7b3d2",
-            },
-            image: {
-              type: :BackgroundImage,
-              hash: "8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
-              url: "/repository/BackgroundImage/8dd5a1d679ffdd22d109fca9ccef37272a4fc5db",
-            },
-            configuration: {
-              type: :BackgroundConfiguration,
-              hash: "d4367d5b719299e702ca26a2923ce5ef3235c1c7",
-              url: "/repository/BackgroundConfiguration/d4367d5b719299e702ca26a2923ce5ef3235c1c7",
-            },
-          },
-          effect: {
-            name: "pjsekai.classic",
-            version: 2,
-            title: "プロセカ",
-            subtitle: "プロジェクトセカイ カラフルステージ!",
-            author: "Sonolus",
-            thumbnail: {
-              type: :EffectThumbnail,
-              hash: "e5f439916eac9bbd316276e20aed999993653560",
-              url: "/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560",
-            },
-            data: {
-              type: :EffectData,
-              hash: "b98f36f0370dd5b4cdaa67d594c203f07bbed055",
-              url: "/repository/EffectData/b98f36f0370dd5b4cdaa67d594c203f07bbed055",
-            },
-          },
-          particle: {
-            name: "pjsekai.classic",
-            version: 1,
-            title: "プロセカ",
-            subtitle: "プロジェクトセカイ カラフルステージ!",
-            author: "Sonolus",
-            thumbnail: {
-              type: :ParticleThumbnail,
-              hash: "e5f439916eac9bbd316276e20aed999993653560",
-              url: "/repository/ParticleThumbnail/e5f439916eac9bbd316276e20aed999993653560",
-            },
-            data: {
-              type: :ParticleData,
-              hash: "f84c5dead70ad62a00217589a73a07e7421818a8",
-              url: "/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8",
-            },
-            texture: {
-              type: :ParticleTexture,
-              hash: "4850a8f335204108c439def535bcf693c7f8d050",
-              url: "/repository/ParticleTexture/4850a8f335204108c439def535bcf693c7f8d050",
-            },
-          },
-          thumbnail: {
-            type: :EngineThumbnail,
-            hash: "e5f439916eac9bbd316276e20aed999993653560",
-            url: "/repository/EngineThumbnail/e5f439916eac9bbd316276e20aed999993653560",
-          },
-          data: {
-            type: :EngineData,
-            hash: "201a2a4022c8cd188c922fa5658e4fdc3ab83430",
-            url: "/repository/EngineData/201a2a4022c8cd188c922fa5658e4fdc3ab83430",
-          },
-          configuration: {
-            type: :EngineConfiguration,
-            hash: "55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-            url: "/repository/EngineConfiguration/55ada0ef19553e6a6742cffbb66f7dce9f85a7ee",
-          },
-        },
-        useSkin: {
-          useDefault: true,
-        },
-        useBackground: {
-          useDefault: true,
-        },
-        useEffect: {
-          useDefault: true,
-        },
-        useParticle: {
-          useDefault: true,
-        },
-        title: "#{difficulty[:musicDifficulty].capitalize} - #{vocal[:caption]}",
-        artists: vocal[:characters]
-          .map { |c| c[:characterType] == "game_character" ? OFFICIAL_CHARACTERS[c[:characterId]] : OUTSIDE_CHARACTERS[c[:characterId]] }
-          .map { |c| c[:name] || "#{c[:firstName]} #{c[:givenName]}".strip }
-          .join(" & ").then { |s| s.empty? ? "-" : s },
-        author: "",
-        cover: {
-          type: :LevelCover,
-          url: "https://storage.sekai.best/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
-        },
-        bgm: {
-          type: :LevelBgm,
-          url: "https://storage.sekai.best/sekai-assets/music/long/#{preview_id}_rip/#{preview_id}.mp3",
-        },
-        preview: {
-          type: :LevelPreview,
-          url: "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
-        },
-        data: {
-          type: :LevelData,
-          url: "/levels/#{level[:id]}.#{vocal[:id]}.#{difficulty[:musicDifficulty]}/data?0.1.0-beta.11",
-        },
-      }.tap { |l| modify_level!(l, false, :official) }
+          Published at: #{Time.at(level[:publishedAt] / 1000, in: "+00:00").strftime("%m/%d/%Y %H:%M:%S")} (UTC)
+        DESC
+)),
+        recommended: levels,
+      })
     end
-  end.flatten
-  json({
-    item: {
-      name: "group-#{level[:id]}",
-      version: 1,
-      rating: vocals.length,
-      title: level[:title],
-      artists: format_artist(level),
-      author: "下から難易度を選択して下さい。",
-      cover: {
-        type: :LevelCover,
-        hash: get_file_hash("./public/repo/folder.png"),
-        url: "/repo/folder.png",
-      },
-      engine: {
-        name: "category",
-        title: "曲選択",
-      },
-      preview: {
-        type: :LevelPreview,
-        url: "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3",
-      },
-    },
-    description: <<~DESCRIPTION,
-      作詞：#{level[:lyricist]}
-      作曲：#{level[:composer]}
-      編曲：#{level[:arranger]}
-
-      追加日時：#{Time.at(level[:publishedAt] / 1000, in: "+09:00").strftime("%Y/%m/%d %H:%M:%S")}
-    DESCRIPTION
-    recommended: levels,
-  })
-end
-get %r{/official/levels/level-(.+?)(\.flick)?} do |name, flick|
-  data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
-  modify_level!(data[:item], false, :official)
-  level = data[:item]
-  if flick
-    level[:title] += "（フリック）"
-    level[:name] += ".flick"
-    level[:useBackground][:item][:image][:url] += ".flick"
-    level[:useBackground][:item][:image][:hash] = File.exist?("./dist/bg/#{name}.flick.png") ? get_file_hash("./dist/bg/#{name}.flick.png") : ""
-    level[:data][:url] = "/flick/#{name}"
-    level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
-  end
-  data[:recommended] = [
-    {
-      name: flick ? level[:name][..-7] : level[:name] + ".flick",
-      version: 2,
-      title: flick ? "FlickモードOFF" : "FlickモードON",
-      subtitle: "-",
-      cover: {
-        type: :LevelCover,
-        hash: get_file_hash("./public/repo/flick_#{flick ? "off" : "on"}.png"),
-        url: "/repo/flick_#{flick ? "off" : "on"}.png",
-      },
-      engine: {},
-    },
-  ]
-  json data
-end
-
-get "/official/flick/:name" do |name|
-  next send_file("./dist/modify/#{name}-f.gz") if File.exist?("./dist/modify/#{name}-f.gz")
-  raw = HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}/data").body
-  gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
-  level_data = JSON.parse(gzreader.read, symbolize_names: true)
-  level_data[:entities].each do |entity|
-    next if entity[:archetype] < 3
-    val = entity[:data][:values]
-    val[0] -= 9
-    val[3] -= 9 if [9, 16].include?(entity[:archetype])
-
-    if [3, 7, 10, 14].include? entity[:archetype]
-      entity[:archetype] += 1
-      entity[:data][:values][3] = -1
+    get %r{/levels/frpt-level-(.+?)(\.flick)?} do |name, flick|
+      data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
+      modify_level!(data[:item], false, :official)
+      level = data[:item]
+      if flick
+        level[:title] += " (Flick)"
+        level[:name] += ".flick"
+        level[:useBackground][:item][:image][:url] += ".flick"
+        level[:useBackground][:item][:image][:hash] = File.exist?("./dist/bg/#{name}.flick.png") ? get_file_hash("./dist/bg/#{name}.flick.png") : ""
+        level[:data][:url] = "/flick/#{name}"
+        level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
+      end
+      data[:recommended] = [
+        {
+          name: (flick ? level[:name][..-7] : level[:name] + ".flick").sub("pjsekai-", ""),
+          version: 2,
+          title: (params[:localization] == "ja" ? (flick ? "FlickモードOFF" : "FlickモードON") :
+            (flick ? "Disable Flick" : "Enable Flick")),
+          subtitle: "-",
+          cover: {
+            type: :LevelCover,
+            hash: get_file_hash("./public/repo/flick_#{flick ? "off" : "on"}.png"),
+            url: "/repo/flick_#{flick ? "off" : "on"}.png",
+          },
+          engine: {},
+        },
+      ]
+      json data
     end
   end
-  Zlib::GzipWriter.open("./dist/modify/#{name}-f.gz") do |gz|
-    gz.write(JSON.dump(level_data))
+
+  get "/flick/:name" do |name|
+    next send_file("./dist/modify/#{name}-f.gz") if File.exist?("./dist/modify/#{name}-f.gz")
+    raw = HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}/data").body
+    gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
+    level_data = JSON.parse(gzreader.read, symbolize_names: true)
+    level_data[:entities].each do |entity|
+      next if entity[:archetype] < 3
+      val = entity[:data][:values]
+      val[0] -= 9
+      val[3] -= 9 if [9, 16].include?(entity[:archetype])
+
+      if [3, 7, 10, 14].include? entity[:archetype]
+        entity[:archetype] += 1
+        entity[:data][:values][3] = -1
+      end
+    end
+    Zlib::GzipWriter.open("./dist/modify/#{name}-f.gz") do |gz|
+      gz.write(JSON.dump(level_data))
+    end
+    send_file("./dist/modify/#{name}-f.gz")
   end
-  send_file("./dist/modify/#{name}-f.gz")
-end
 
-get %r{/official/bgm/(.+)} do |name|
-  next send_file("./dist/bgm/#{name}.mp3") if File.exist?("./dist/bgm/#{name}.mp3")
-  Open3.capture2e("ffmpeg", "-i", "https://storage.sekai.best/sekai-assets/music/long/#{name}_rip/#{name}.mp3", "-ss", "9", "./dist/bgm/#{name}.mp3")
-  send_file("./dist/bgm/#{name}.mp3")
-end
+  get %r{/bgm/(.+)} do |name|
+    next send_file("./dist/bgm/#{name}.mp3") if File.exist?("./dist/bgm/#{name}.mp3")
+    Open3.capture2e("ffmpeg", "-i", "https://storage.sekai.best/sekai-assets/music/long/#{name}_rip/#{name}.mp3", "-ss", "9", "./dist/bgm/#{name}.mp3")
+    send_file("./dist/bgm/#{name}.mp3")
+  end
 
-get %r{/official/generate/(.+?)(\.flick)?} do |name, flick|
-  unless File.exist?("dist/bg/#{name}#{flick}.png")
-    case $config.background_engine
-    when "dxruby"
-      eval File.read("./bg_gen/main.rb")  # rubocop:disable Security/Eval
-    when "pillow"
-      start_python unless python_started?
-      res = HTTP.get("http://localhost:#{$config.python_port}/generate/official-#{name}.png")
-      File.write("dist/bg/#{name}.png", res.body, mode: "wb")
-    when "web"
-      res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!!flick}")
-      if res.status == 200
-        File.write("dist/bg/#{name}#{flick}.png", res.body, mode: "wb")
-      else
+  get %r{/generate/(.+?)(\.flick)?} do |name, flick|
+    unless File.exist?("dist/bg/#{name}#{flick}.png")
+      case $config.background_engine
+      when "dxruby"
+        eval File.read("./bg_gen/main.rb")  # rubocop:disable Security/Eval
+      when "pillow"
+        start_python unless python_started?
+        res = HTTP.get("http://localhost:#{$config.python_port}/generate/official-#{name}.png")
+        File.write("dist/bg/#{name}.png", res.body, mode: "wb")
+      when "web"
+        res = HTTP.post("https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!!flick}")
+        if res.status == 200
+          File.write("dist/bg/#{name}#{flick}.png", res.body, mode: "wb")
+        else
+          redirect "/repo/background-base.png"
+        end
+      when "none"
         redirect "/repo/background-base.png"
       end
-    when "none"
-      redirect "/repo/background-base.png"
     end
+    send_file("./dist/bg/#{name}#{flick}.png")
   end
-  send_file("./dist/bg/#{name}#{flick}.png")
-end
 
-get %r{/official/shift/(.+?)} do |name|
-  next send_file("./dist/modify/#{name}.gz") if File.exist?("./dist/modify/#{name}.gz")
-  raw = HTTP.get("https://servers.sonolus.com/pjsekai/levels/#{name}/data").body
-  gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
-  level_data = JSON.parse(gzreader.read, symbolize_names: true)
-  level_data[:entities].each do |entity|
-    next if entity[:archetype] < 3
-    val = entity[:data][:values]
-    val[0] -= 9
-    val[3] -= 9 if [9, 16].include?(entity[:archetype])
+  get %r{/shift/(.+?)} do |name|
+    next send_file("./dist/modify/#{name}.gz") if File.exist?("./dist/modify/#{name}.gz")
+    raw = HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}/data").body
+    gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
+    level_data = JSON.parse(gzreader.read, symbolize_names: true)
+    level_data[:entities].each do |entity|
+      next if entity[:archetype] < 3
+      val = entity[:data][:values]
+      val[0] -= 9
+      val[3] -= 9 if [9, 16].include?(entity[:archetype])
+    end
+    Zlib::GzipWriter.open("./dist/modify/#{name}.gz") do |gz|
+      gz.write(JSON.dump(level_data))
+    end
+    send_file("./dist/modify/#{name}.gz")
   end
-  Zlib::GzipWriter.open("./dist/modify/#{name}.gz") do |gz|
-    gz.write(JSON.dump(level_data))
+
+  get %r{/(.*)} do |path|
+    redirect "/#{path}"
   end
-  send_file("./dist/modify/#{name}.gz")
 end
 
 get "/effects/pjsekai.fixed" do
@@ -1140,10 +1055,6 @@ end
 
 get %r{/(?:tests/(?:[^/]+)|official)/(.+)} do |path|
   redirect "/#{path}", 301
-end
-
-get %r{/pjsekai/(.+)} do |path|
-  redirect "/official/#{path}?#{request.query_string}", 301
 end
 
 unless $config.public
