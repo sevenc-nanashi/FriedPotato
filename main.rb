@@ -163,8 +163,12 @@ def get_file_hash(path)
   $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
 end
 
-def format_artist(level)
-  "作詞：#{level[:lyricist]}  作曲：#{level[:composer]}  編曲：#{level[:arranger]}"
+def format_artist(level, locale)
+  if locale == "ja"
+    "作詞：#{level[:lyricist]}  作曲：#{level[:composer]}  編曲：#{level[:arranger]}"
+  else
+    "Lyrics: #{level[:lyricist]}  Music: #{level[:composer]}  Arrangement: #{level[:arranger]}"
+  end
 end
 
 def modify_level!(level, extra, server)
@@ -172,12 +176,15 @@ def modify_level!(level, extra, server)
   modifier = ""
   extra_name = nil
   if server == :official
+    level[:name] = level[:name].sub("pjsekai-", "frptp-level-")
+
     bgm_id = level[:bgm][:url].split("/")[-1].split(".")[0]
     level[:data][:url] = "/shift/#{level[:name]}"
     level[:bgm][:hash] = get_file_hash("./dist/bgm/#{bgm_id}.mp3") if File.exist?("./dist/bgm/#{bgm_id}.mp3")
     level[:bgm][:url] = "/bgm/#{bgm_id}"
-    level[:name].insert(0, "level-")
   elsif level[:engine][:name] == "wbp-pjsekai"
+    level[:name] = "frpt-" + level[:name]
+
     level[:useBackground] = {}
     level[:data][:url] = "/convert/#{level[:name]}"
     extra_name = " @ Converter"
@@ -185,6 +192,8 @@ def modify_level!(level, extra, server)
     level[:data].delete(:hash)
     level[:data][:hash] = get_file_hash("./convert/#{level[:name]}.gz") if File.exist?("./convert/#{level[:name]}.gz")
   elsif level[:engine][:name] == "psekai"
+    level[:name] = "frpt-" + level[:name]
+
     level[:data][:url] = "/convert/l_#{level[:name]}"
     level[:name] = "l_" + level[:name]
     extra_name = " @ Old server"
@@ -197,7 +206,7 @@ def modify_level!(level, extra, server)
     end
   end
   # img_name = level[:name].dup
-  if extra
+  if extra && server != :official
     # img_name += ".extra"
     modifier += "e"
     level[:title] += " (Extra)"
@@ -251,8 +260,16 @@ def modify_level!(level, extra, server)
       url: "/repo/config.gz",
     },
   }
-  level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
-  level[:name] = "frpt-" + level[:name]
+
+  if server == :official
+    name = level[:name].split("-")[2]
+    level[:useBackground][:item][:image][:url] = level[:useBackground][:item][:image][:url]
+      .sub("frptp-level-", "official--")
+      .sub("_", "_" + name)
+    level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{name}-#{modifier}.png") if File.exist?("dist/bg/#{name}-#{modifier}.png")
+  else
+    level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+  end
 end
 
 SEARCH_OPTION = [
@@ -462,7 +479,7 @@ get %r{(?:/tests/[^/]+|/official)?/sonolus/levels/frpt-system} do
   json({ item: item })
 end
 
-get %r{(?:/tests/[^/]+)?/generate/(.+)_(.+)} do |name, key|
+get %r{(?:/tests/[^/]+|/pjsekai|/official)?/generate/(.+)_(.+)} do |name, key|
   modifier = key.split("-")[1] || ""
   unless File.exist?("dist/bg/#{key}.png")
     case $config.background_engine
@@ -591,7 +608,7 @@ namespace %r{/(?:official|pjsekai)} do
               version: 1,
               rating: level_vocals.length,
               title: level[:title],
-              artists: format_artist(level),
+              artists: format_artist(level, params[:localization]),
               cover: {
                 type: :LevelCover,
                 url: "https://storage.sekai.best/sekai-assets/music/jacket/jacket_s_#{level[:id].zfill(3)}_rip/jacket_s_#{level[:id].zfill(3)}.png",
@@ -612,6 +629,35 @@ namespace %r{/(?:official|pjsekai)} do
       )
     end
 
+    get %r{/levels/frptp-level-([^.]+)(\.flick)?} do |name, flick|
+      data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
+      modify_level!(data[:item], !!flick, :official)
+      level = data[:item]
+      if flick
+        level[:title] += " (Flick)"
+        level[:name] += ".flick"
+        level[:useBackground][:item][:image][:url] += "e"
+        level[:useBackground][:item][:image][:hash] = File.exist?("./dist/bg/#{name}.flick.png") ? get_file_hash("./dist/bg/#{name}.flick.png") : ""
+        level[:data][:url] = "/flick/#{name}"
+        level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
+      end
+      data[:recommended] = [
+        {
+          name: (flick ? level[:name][..-7] : level[:name] + ".flick").sub("pjsekai-", ""),
+          version: 2,
+          title: (params[:localization] == "ja" ? (flick ? "FlickモードOFF" : "FlickモードON") :
+            (flick ? "Disable Flick" : "Enable Flick")),
+          subtitle: "-",
+          cover: {
+            type: :LevelCover,
+            hash: get_file_hash("./public/repo/flick_#{flick ? "off" : "on"}.png"),
+            url: "/repo/flick_#{flick ? "off" : "on"}.png",
+          },
+          engine: {},
+        },
+      ]
+      json data
+    end
     get %r{/levels/group-([^.]+)} do |name|
       level = JSON.parse(HTTP.get("https://sekai-world.github.io/sekai-master-db-diff/musics.json"), symbolize_names: true)
         .find { |l| l[:id] == name.to_i }
@@ -625,7 +671,7 @@ namespace %r{/(?:official|pjsekai)} do
       levels = vocals.map do |vocal|
         difficulties.reverse.map do |difficulty|
           {
-            name: "#{level[:id]}-#{vocal[:id]}-#{difficulty[:musicDifficulty]}",
+            name: "frptp-level-#{level[:id]}-#{vocal[:id]}-#{difficulty[:musicDifficulty]}",
             version: 1,
             rating: difficulty[:playLevel],
             engine: engine,
@@ -672,7 +718,7 @@ namespace %r{/(?:official|pjsekai)} do
           version: 1,
           rating: vocals.length,
           title: level[:title],
-          artists: format_artist(level),
+          artists: format_artist(level, params[:localization]),
           author: "-",
           cover: {
             type: :LevelCover,
@@ -705,35 +751,6 @@ namespace %r{/(?:official|pjsekai)} do
 )),
         recommended: levels,
       })
-    end
-    get %r{/levels/frpt-level-(.+?)(\.flick)?} do |name, flick|
-      data = JSON.parse(HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}").body.to_s.gsub('"/', '"https://servers.sonolus.com/pjsekai/'), symbolize_names: true)
-      modify_level!(data[:item], false, :official)
-      level = data[:item]
-      if flick
-        level[:title] += " (Flick)"
-        level[:name] += ".flick"
-        level[:useBackground][:item][:image][:url] += ".flick"
-        level[:useBackground][:item][:image][:hash] = File.exist?("./dist/bg/#{name}.flick.png") ? get_file_hash("./dist/bg/#{name}.flick.png") : ""
-        level[:data][:url] = "/flick/#{name}"
-        level[:data][:hash] = File.exist?("./dist/modify/#{level[:data][:hash]}-f.gz") ? get_file_hash("./dist/modify/#{level[:data][:hash]}-f.gz") : ""
-      end
-      data[:recommended] = [
-        {
-          name: (flick ? level[:name][..-7] : level[:name] + ".flick").sub("pjsekai-", ""),
-          version: 2,
-          title: (params[:localization] == "ja" ? (flick ? "FlickモードOFF" : "FlickモードON") :
-            (flick ? "Disable Flick" : "Enable Flick")),
-          subtitle: "-",
-          cover: {
-            type: :LevelCover,
-            hash: get_file_hash("./public/repo/flick_#{flick ? "off" : "on"}.png"),
-            url: "/repo/flick_#{flick ? "off" : "on"}.png",
-          },
-          engine: {},
-        },
-      ]
-      json data
     end
   end
 
@@ -788,7 +805,7 @@ namespace %r{/(?:official|pjsekai)} do
     send_file("./dist/bg/#{name}#{flick}.png")
   end
 
-  get %r{/shift/(.+?)} do |name|
+  get %r{/shift/frptp-level-(.+?)} do |name|
     next send_file("./dist/modify/#{name}.gz") if File.exist?("./dist/modify/#{name}.gz")
     raw = HTTP.get("https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}/data").body
     gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
