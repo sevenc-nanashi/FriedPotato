@@ -269,6 +269,7 @@ def modify_level!(level, extra, server)
     level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{name}-#{modifier}.png") if File.exist?("dist/bg/#{name}-#{modifier}.png")
   else
     level[:useBackground][:item][:image][:hash] = get_file_hash("dist/bg/#{level[:cover][:hash]}-#{modifier}.png") if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+    level[:name] = "frpt-" + level[:name]
   end
 end
 
