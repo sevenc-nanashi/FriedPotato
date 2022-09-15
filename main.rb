@@ -1352,13 +1352,18 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |_name, level, hash|
   if File.exist?("./dist/modify/#{key}.gz")
     next send_file "./dist/modify/#{key}.gz"
   end
-  raw =
-    HTTP.get(
-      "https://servers.purplepalette.net/repository/#{level}/data.gz"
-    ).body
-  gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
-  level_data = JSON.parse(gzreader.read, symbolize_names: true)
-  entities = level_data[:entities]
+  level_data = nil
+  entities = nil
+  loop do
+    raw =
+      HTTP.get(
+        "https://servers.purplepalette.net/repository/#{level}/data.gz"
+      ).body
+    gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
+    level_data = JSON.parse(gzreader.read, symbolize_names: true)
+    entities = level_data[:entities]
+    break if entities[3][:data][:values][0]
+  end
   will_delete = []
 
   if $config.trace_enabled
