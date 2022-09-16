@@ -1357,7 +1357,7 @@ get %r{(?:/tests/([^/]+))?/modify/(.+)-(.+)} do |_name, level, hash|
   loop do
     raw =
       HTTP.get(
-        "https://servers.purplepalette.net/repository/#{level}/data.gz"
+        "https://servers-legacy.purplepalette.net/repository/#{level}/data.gz"
       ).body
     gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
     level_data = JSON.parse(gzreader.read, symbolize_names: true)
