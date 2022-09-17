@@ -162,6 +162,14 @@ if ENV["DOCKER"] == "true"
 end
 require "sinatra/reloader" unless $config.public
 $hash_cache = {}
+BLOCKED_AUTHORS =
+  (
+    if File.exist?("./blocked_authors.txt")
+      File.read("./blocked_authors.txt").split("\n")
+    else
+      []
+    end
+  )
 OFFICIAL_CHARACTERS =
   JSON
     .parse(
@@ -567,6 +575,7 @@ namespace "/sonolus" do
       ppdata[:pageCount] += 1
     end
     ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
+    ppdata[:items].reject! { BLOCKED_AUTHORS.include?(_1[:author]) }
     ppdata[:search] = { options: SEARCH_OPTION }
     json ppdata
   end

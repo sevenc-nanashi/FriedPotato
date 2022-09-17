@@ -226,3 +226,4 @@ overrides/*
 
 *.psd
 config.yml
+blocked_authors.txt
