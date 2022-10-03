@@ -358,9 +358,12 @@ get %r{/levels/frpt-(.+)} do |name|
 end
 
 get "/jacket/:name" do
-  HTTP.get(
-    "https://servers-legacy.purplepalette.net/repository/#{params[:name]}/cover.png"
-  ).body
+  HTTP
+    .get(
+      "https://servers-legacy.purplepalette.net/repository/#{params[:name]}/cover.png"
+    )
+    .body
+    .to_s
 end
 
 get "/info" do
