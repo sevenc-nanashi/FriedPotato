@@ -357,6 +357,10 @@ get %r{/levels/frpt-(.+)} do |name|
   erb :level, locals: { level: level }
 end
 
+get %r{/(backgrounds|effects|engines|particles|skins)/(.+)} do |type, name|
+  redirect "sonolus://#{request.host}/#{type}/#{name}"
+end
+
 get "/jacket/:name" do
   HTTP
     .get(
@@ -609,6 +613,9 @@ namespace "/sonolus" do
     json(
       {
         pageCount: 1,
+        search: {
+          options: []
+        },
         items:
           Dir
             .glob("./data/#{type}/*.json")
