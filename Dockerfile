@@ -31,6 +31,6 @@ COPY --from=build /engine/dist/EngineData engine/dist/EngineData
 COPY --from=build /engine/dist/EngineConfiguration engine/dist/EngineConfiguration
 COPY . .
 ENV RUBYOPTS=--jit
-ENV RACK_ENC=production
+ENV RACK_ENV=production
 EXPOSE 4567
 CMD ["/bin/sh", "-c", "bundle exec falcon host"]
