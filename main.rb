@@ -194,6 +194,11 @@ OUTSIDE_CHARACTERS =
       symbolize_names: true
     )
     .to_h { |c| [c[:id], c] }
+BANNER = {
+url: "/repo/banner.png",
+hash: get_file_hash("./public/repo/banner.png"),
+type: :ServerBanner
+}
 
 def get_file_hash(path)
   $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
@@ -416,11 +421,7 @@ namespace "/sonolus" do
   get "/info" do
     resp = {
       title: "FriedPotato",
-      banner: {
-        url: "/repo/banner.png",
-        hash: get_file_hash("./public/repo/banner.png"),
-        type: :ServerBanner
-      },
+      banner: BANNER, 
       levels: {
         items: JSON.parse(File.read("./info.json"), symbolize_names: true),
         search: {
@@ -631,6 +632,8 @@ namespace "/sonolus" do
 end
 get "/tests/:test_id/sonolus/info" do |test_id|
   resp = {
+    title: "FriedPotato Test: #{test_id}",
+      banner: BANNER, 
     levels: {
       items:
         JSON.parse(
@@ -815,6 +818,8 @@ namespace %r{/(?:official|pjsekai)} do
   namespace "/sonolus" do
     get "/info" do
       resp = {
+        title: "FriedPotato: Official Charts",
+      banner: BANNER, 
         levels: {
           items:
             JSON.parse(
