@@ -71,6 +71,7 @@ GEM
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
+    prettier_print (0.1.0)
     process-metrics (0.2.1)
       console (~> 1.8)
       samovar (~> 2.1)
@@ -120,6 +121,8 @@ GEM
       tilt (~> 2.0)
     sinatra-reloader (1.0)
       sinatra-contrib
+    syntax_tree (3.6.2)
+      prettier_print
     tilt (2.0.11)
     timers (4.3.4)
     traces (0.4.1)
@@ -143,6 +146,7 @@ DEPENDENCIES
   sinatra (~> 2.1)
   sinatra-contrib (~> 2.1)
   sinatra-reloader (~> 1.0)
+  syntax_tree (~> 3.6)
   unf_ext (~> 0.0.8.2)
 
 RUBY VERSION

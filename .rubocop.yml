@@ -1,77 +1,37 @@
+inherit_gem:
+  syntax_tree: config/rubocop.yml
+
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.0
-  Exclude:
-    - examples/**/*.rb
 
-Layout:
+Style/Documentation:
   Enabled: false
+
+Lint/ScriptPermission:
+  Enabled: false
+
 Metrics:
   Enabled: false
 
-Style/TrailingCommaInHashLiteral:  # Disabled for rufo
-  EnforcedStyleForMultiline: consistent_comma
-
-Style/TrailingCommaInArrayLiteral:  # Disabled for rufo
-  EnforcedStyleForMultiline: consistent_comma
-
-Style/StringLiterals:  # Disabled for rufo
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-Style/TrailingCommaInArguments:  # Disabled for rufo
+Style/GuardClause:
   Enabled: false
 
-Style/StringLiteralsInInterpolation:  # Disabled for rufo
+Naming/MethodParameterName:
   Enabled: false
 
-Style/StringConcatenation:  # + looks better
+Lint/AssignmentInCondition:
   Enabled: false
 
-Lint/MissingSuper:  # For abstract classes
+Style/RedundantSelf:
   Enabled: false
 
-Lint/AssignmentInCondition:  # Looks bad
+Style/GlobalVars:
   Enabled: false
 
-Style/PerlBackrefs:  # It will be longer
+Naming/VariableNumber:
   Enabled: false
 
-Style/RedundantSelf:  # Looks local variable
+Style/IfUnlessModifier:
   Enabled: false
 
-Naming/VariableNumber:  # Discord API docs naming
-  Enabled: false
-
-Style/ParallelAssignment:  # It will be longer
-  Enabled: false
-
-Style/RedundantInterpolation:  # For make it extendable
-  Enabled: false
-
-Style/Next:  # For make it extendable
-  Enabled: false
-
-Lint/ShadowedException:  # False positive
-  Enabled: false
-
-Lint/AmbiguousOperatorPrecedence:  # Not needed
-  Enabled: false
-
-Style/GlobalVars: # For /exe
-  Enabled: false
-
-Lint/Debugger: # For /exe
-  Enabled: false
-
-Style/GuardClause: # For make it extendable
-  Enabled: false
-
-Layout/EndOfLine: # For git
-  EnforcedStyle: lf
-
-Lint/ScriptPermission: # For GitHub Actions
-  Enabled: false
-
-Style/Documentation: # For editor
-  Enabled: false

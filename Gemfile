@@ -26,3 +26,5 @@ gem "rubocop", "~> 1.26.1"
 
 gem "falcon", "~> 0.39.2"
 gem "unf_ext", "~> 0.0.8.2"
+
+gem "syntax_tree", "~> 3.6"

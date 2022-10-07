@@ -125,20 +125,20 @@ end
 
 def load_datafile(path)
   data = File.read("./data/#{path}.json")
-  data.gsub!(/"!import:(.+?)"/) do |match|
+  data.gsub!(/"!import:(.+?)"/) do |_match|
     File.read("./data/#{Regexp.last_match[1]}")
   end
   JSON.parse(data, symbolize_names: true)
 end
 
-def load_engine()
+def load_engine
   base = load_datafile("engines/frpt-pjsekai.extended")
   if Dir.exist?($config.engine_path)
     base[:data][:url] = "/engine/data"
-    base[:data][:hash] = get_file_hash($config.engine_path + "/dist/EngineData")
+    base[:data][:hash] = get_file_hash("#{$config.engine_path}/dist/EngineData")
     base[:configuration][:url] = "/engine/configuration"
     base[:configuration][:hash] = get_file_hash(
-      $config.engine_path + "/dist/EngineConfiguration"
+      "#{$config.engine_path}/dist/EngineConfiguration"
     )
   end
   base[:skin][:name] = "frpt-pjsekai.extended"
@@ -195,10 +195,10 @@ OUTSIDE_CHARACTERS =
     )
     .to_h { |c| [c[:id], c] }
 BANNER = {
-url: "/repo/banner.png",
-hash: get_file_hash("./public/repo/banner.png"),
-type: :ServerBanner
-}
+  url: "/repo/banner.png",
+  hash: get_file_hash("./public/repo/banner.png"),
+  type: :ServerBanner
+}.freeze
 
 def get_file_hash(path)
   $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
@@ -226,7 +226,7 @@ def modify_level!(level, extra, server)
     ) if File.exist?("./dist/bgm/#{bgm_id}.mp3")
     level[:bgm][:url] = "/bgm/#{bgm_id}"
   elsif level[:engine][:name] == "wbp-pjsekai"
-    level[:name] = "frpt-" + level[:name]
+    level[:name] = "frpt-#{level[:name]}"
 
     level[:useBackground] = {}
     level[:data][:url] = "/convert/#{level[:name]}"
@@ -237,10 +237,10 @@ def modify_level!(level, extra, server)
       "./convert/#{level[:name]}.gz"
     ) if File.exist?("./convert/#{level[:name]}.gz")
   elsif level[:engine][:name] == "psekai"
-    level[:name] = "frpt-" + level[:name]
+    level[:name] = "frpt-#{level[:name]}"
 
     level[:data][:url] = "/convert/l_#{level[:name]}"
-    level[:name] = "l_" + level[:name]
+    level[:name] = "l_#{level[:name]}"
     extra_name = " @ Old server"
   else
     level[:data][:url] = "/modify/#{level[:name]}-#{level[:data][:hash]}"
@@ -317,15 +317,19 @@ def modify_level!(level, extra, server)
       :image
     ][
       :url
-    ].sub("frptp-level-", "official--").sub("_", "_" + name)
-    level[:useBackground][:item][:image][:hash] = get_file_hash(
-      "dist/bg/#{name}-#{modifier}.png"
-    ) if File.exist?("dist/bg/#{name}-#{modifier}.png")
+    ].sub("frptp-level-", "official--").sub("_", "_#{name}")
+    if File.exist?("dist/bg/#{name}-#{modifier}.png")
+      level[:useBackground][:item][:image][:hash] = get_file_hash(
+        "dist/bg/#{name}-#{modifier}.png"
+      )
+    end
   else
-    level[:useBackground][:item][:image][:hash] = get_file_hash(
-      "dist/bg/#{level[:cover][:hash]}-#{modifier}.png"
-    ) if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
-    level[:name] = "frpt-" + level[:name]
+    if File.exist?("dist/bg/#{level[:cover][:hash]}-#{modifier}.png")
+      level[:useBackground][:item][:image][:hash] = get_file_hash(
+        "dist/bg/#{level[:cover][:hash]}-#{modifier}.png"
+      )
+    end
+    level[:name] = "frpt-#{level[:name]}"
   end
 end
 
@@ -339,9 +343,9 @@ SEARCH_OPTION = [
 ].freeze
 
 set :bind, "0.0.0.0"
-set :public_folder, File.dirname(__FILE__) + "/public"
+set :public_folder, "#{File.dirname(__FILE__)}/public"
 if ENV["RACK_ENV"] == "production"
-  set :port, ENV["PORT"]
+  set :port, ENV.fetch("PORT", nil)
   set :environment, :production
 else
   set :port, $config.port
@@ -421,7 +425,7 @@ namespace "/sonolus" do
   get "/info" do
     resp = {
       title: "FriedPotato",
-      banner: BANNER, 
+      banner: BANNER,
       levels: {
         items: JSON.parse(File.read("./info.json"), symbolize_names: true),
         search: {
@@ -433,12 +437,12 @@ namespace "/sonolus" do
           {
             name: "frpt-system",
             title: "統計：背景画像数",
-            subtitle: Dir.glob("./dist/bg/*.png").size.to_s + "枚"
+            subtitle: "#{Dir.glob("./dist/bg/*.png").size}枚"
           },
           {
             name: "frpt-system",
             title: "統計：変換された譜面数",
-            subtitle: Dir.glob("./dist/conv/*.gz").size.to_s + "個"
+            subtitle: "#{Dir.glob("./dist/conv/*.gz").size}個"
           }
         ],
         search: {
@@ -482,10 +486,11 @@ namespace "/sonolus" do
     levels =
       JSON.parse(
         HTTP.get(
-          "https://servers-legacy.purplepalette.net/levels/list?" +
+          "https://servers-legacy.purplepalette.net/levels/list?#{
             URI.encode_www_form(
               { keywords: params[:keywords], page: params[:page] }
             )
+            }"
         ).body,
         symbolize_names: true
       )
@@ -494,14 +499,14 @@ namespace "/sonolus" do
       items:
         levels[:items].map do |level|
           {
-            name: "frpt-bg-" + level[:name],
+            name: "frpt-bg-#{level[:name]}",
             version: 2,
             title: level[:title],
             subtitle: "#{level[:artists]} / #{level[:author]}",
             thumbnail: {
               type: :BackgroundThumbnail,
               url:
-                "https://servers-legacy.purplepalette.net" + level[:cover][:url]
+                "https://servers-legacy.purplepalette.net#{level[:cover][:url]}"
             },
             data: {
               type: :BackgroundData,
@@ -539,14 +544,14 @@ namespace "/sonolus" do
         description: level[:description],
         recommended: [],
         item: {
-          name: "frpt-bg-" + level[:name],
+          name: "frpt-bg-#{level[:name]}",
           version: 2,
           title: level[:title],
           subtitle: "#{level[:artists]} / #{level[:author]}",
           thumbnail: {
             type: :BackgroundThumbnail,
             url:
-              "https://servers-legacy.purplepalette.net" + level[:cover][:url]
+              "https://servers-legacy.purplepalette.net#{level[:cover][:url]}"
           },
           data: {
             type: :BackgroundData,
@@ -570,10 +575,10 @@ namespace "/sonolus" do
       JSON.parse(
         HTTP
           .get(
-            "https://servers-legacy.purplepalette.net/levels/list?" +
+            "https://servers-legacy.purplepalette.net/levels/list?#{ +
               URI.encode_www_form(
                 { keywords: params[:keywords], page: params[:page].to_i }
-              ).gsub("+", "%20")
+              ).gsub("+", "%20")}"
           )
           .body
           .to_s
@@ -596,7 +601,7 @@ namespace "/sonolus" do
             :items
           ].map do |data|
             data[:data][:url] = "/local/#{data[:name]}/data.gz"
-            data[:name] = "l_" + data[:name]
+            data[:name] = "l_#{data[:name]}"
 
             data
           end
@@ -624,7 +629,6 @@ namespace "/sonolus" do
       }
     )
   end
-
   get %r{/(effects|particles|engines|skins)/(.+)} do |type, name|
     data = load_datafile("#{type}/#{name}")
     json({ item: data, description: data[:description], recommended: [] })
@@ -633,7 +637,7 @@ end
 get "/tests/:test_id/sonolus/info" do |test_id|
   resp = {
     title: "FriedPotato Test: #{test_id}",
-      banner: BANNER, 
+    banner: BANNER,
     levels: {
       items:
         JSON.parse(
@@ -775,7 +779,7 @@ get %r{(?:/tests/[^/]+)?/sonolus/levels/frpt-([^.]+)(?:\.(.+))?} do |name, suffi
   modify_level!(level, extra, :purplepalette)
   level_hash[:recommended] = [
     {
-      name: extra ? level[:name][..-7] : level[:name] + ".extra",
+      name: extra ? level[:name][..-7] : "#{level[:name]}.extra",
       version: 2,
       title: extra ? "ExtraモードOFF" : "ExtraモードON",
       subtitle: "-",
@@ -794,7 +798,7 @@ get %r{(?:/tests/[^/]+)?/sonolus/levels/frpt-([^.]+)(?:\.(.+))?} do |name, suffi
   ]
   if File.exist?("dist/bg/#{level[:name]}.png") && !$config.public
     level_hash[:recommended] << {
-      name: level[:name] + ".delete-cache",
+      name: "#{level[:name]}.delete-cache",
       version: 2,
       title: "背景キャッシュを削除",
       subtitle: "-",
@@ -819,7 +823,7 @@ namespace %r{/(?:official|pjsekai)} do
     get "/info" do
       resp = {
         title: "FriedPotato: Official Charts",
-      banner: BANNER, 
+        banner: BANNER,
         levels: {
           items:
             JSON.parse(
@@ -941,7 +945,7 @@ namespace %r{/(?:official|pjsekai)} do
             .gsub('"/', '"https://servers.sonolus.com/pjsekai/'),
           symbolize_names: true
         )
-      modify_level!(data[:item], !!flick, :official)
+      modify_level!(data[:item], !flick.nil?, :official)
       level = data[:item]
       if flick
         level[:title] += " (Flick)"
@@ -966,7 +970,7 @@ namespace %r{/(?:official|pjsekai)} do
       data[:recommended] = [
         {
           name:
-            (flick ? level[:name][..-7] : level[:name] + ".flick").sub(
+            (flick ? level[:name][..-7] : "#{level[:name]}.flick").sub(
               "pjsekai-",
               ""
             ),
@@ -1110,7 +1114,7 @@ namespace %r{/(?:official|pjsekai)} do
                 "https://storage.sekai.best/sekai-assets/music/short/#{preview_id}_rip/#{preview_id}_short.mp3"
             }
           },
-          description: (params[:localization] == "ja" ? (<<~DESC) : (<<~DESC)),
+          description: (params[:localization] == "ja" ? <<~DESC : <<~DESC),
           作詞：#{level[:lyricist]}
           作曲：#{level[:composer]}
           編曲：#{level[:arranger]}
@@ -1186,7 +1190,7 @@ namespace %r{/(?:official|pjsekai)} do
       when "web"
         res =
           HTTP.post(
-            "https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!!flick}"
+            "https://image-gen.sevenc7c.com/generate/official-#{name}.png?extra=#{!flick.nil?}"
           )
         if res.status == 200
           File.write("dist/bg/#{name}#{flick}.png", res.body, mode: "wb")
@@ -1384,11 +1388,11 @@ namespace %r{(?:/tests/([^/]+))?} do
   end
 
   get %r{/engine/data} do |_name|
-    send_file $config.engine_path + "/dist/EngineData"
+    send_file "#{$config.engine_path}/dist/EngineData"
   end
 
   get %r{/engine/configuration} do |_name|
-    send_file $config.engine_path + "/dist/EngineConfiguration"
+    send_file "#{$config.engine_path}/dist/EngineConfiguration"
   end
 end
 
