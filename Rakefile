@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "zlib"
 require "json"
 require "digest"
@@ -17,7 +18,7 @@ task :seconfig do
 
   config.each do |c|
     unless c[:clip][:hash]
-      c[:clip][:hash] = Digest::SHA1.file("./public" + c[:clip][:url]).hexdigest
+      c[:clip][:hash] = Digest::SHA1.file("./public#{c[:clip][:url]}").hexdigest
     end
   end
   config_base[:clips] += config

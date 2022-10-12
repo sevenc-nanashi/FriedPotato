@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "dxruby"
 
 dot = Image.load("dot.png")
