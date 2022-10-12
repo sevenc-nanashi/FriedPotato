@@ -24,7 +24,7 @@ class Config
       default: false
     },
     background_engine: {
-      description: "背景生成のエンジン。dxruby、pillow、web、noneのいずれかを指定して下さい。",
+      description: "背景生成のエンジン。dxruby、web、noneのいずれかを指定して下さい。",
       default: "web"
     },
     sonolus_5_10: {
@@ -34,10 +34,6 @@ class Config
     port: {
       description: "ポート番号。",
       default: 4567
-    },
-    python_port: {
-      description: "Pythonのポート番号。",
-      default: 4568
     },
     public: {
       description: "公開サーバーモードで起動するか。",
@@ -106,22 +102,6 @@ class Integer
 end
 
 $config = Config.new
-
-def python_started?
-  Socket.tcp("localhost", $config.python_port, connect_timeout: 0.1).close
-rescue Errno::ETIMEDOUT
-  false
-else
-  true
-end
-
-def start_python
-  Open3.popen2(
-    { "PORT" => $config.python_port.to_s },
-    "../.venv/Scripts/python.exe ./main.py",
-    chdir: "bg_gen_python"
-  )
-end
 
 def load_datafile(path)
   data = File.read("./data/#{path}.json")
@@ -702,11 +682,6 @@ get %r{(?:/tests/[^/]+|/pjsekai|/official)?/generate/(.+)_(.+)} do |name, key|
     when "dxruby"
       $current = name
       eval File.read("./bg_gen/main.rb") # rubocop:disable Security/Eval
-    when "pillow"
-      start_python unless python_started?
-      HTTP.get(
-        "http://localhost:#{$config.python_port}/generate/#{name}?extra=#{modifier.include?("e")}"
-      )
     when "web"
       name += "_#{key}" if name == "l"
       HTTP
@@ -1180,13 +1155,6 @@ namespace %r{/(?:official|pjsekai)} do
       case $config.background_engine
       when "dxruby"
         eval File.read("./bg_gen/main.rb") # rubocop:disable Security/Eval
-      when "pillow"
-        start_python unless python_started?
-        res =
-          HTTP.get(
-            "http://localhost:#{$config.python_port}/generate/official-#{name}.png"
-          )
-        File.write("dist/bg/#{name}.png", res.body, mode: "wb")
       when "web"
         res =
           HTTP.post(
