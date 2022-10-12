@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>??? - FriedPotato</title>
+    <script src="https://unpkg.com/i18next@21.6.11/dist/umd/i18next.min.js"></script>
+    <script src="https://unpkg.com/i18next-browser-languagedetector/i18nextBrowserLanguageDetector.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Nanum+Gothic&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      p {
+        text-align: center;
+      }
+
+      a {
+        text-decoration: none;
+        color: #0074D9;
+        position: relative;
+      }
+
+      .locale {
+        position: relative;
+      }
+
+      a::before,
+      .locale::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 0;
+        height: 2px;
+        background-color: currentColor;
+        transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+
+        a:hover::before,
+        .locale:not(.selected):hover::before {
+          left: 0;
+          right: auto;
+          width: 100%;
+        }
+      }
+
+      body {
+        font-family: "Poppins", "M PLUS Rounded 1c", "Nanum Gothic", "FZZhunYuan-M02S", "YouYuan", "GenSenRounded-R", sans-serif;
+        background: rgb(236, 225, 209);
+        background: linear-gradient(160deg, rgba(236, 225, 209, 1) 0%, rgba(213, 184, 142, 1) 47%, rgba(196, 148, 95, 1) 100%);
+        color: #4b251a;
+      }
+
+      :lang(ja) {
+        font-family: "Poppins", "M PLUS Rounded 1c", "FZZhunYuan-M02S", sans-serif;
+      }
+
+      main {
+        max-width: 1024px;
+
+        margin: 1em auto;
+        padding: 1em 2.5em;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        border-radius: 0.5em;
+
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(5px);
+
+      }
+
+      #not-found {
+        padding-top: 2rem;
+        padding-bottom: 1em;
+      }
+
+      h1 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+      }
+
+      p,
+      ul {
+        margin: 0.5em;
+      }
+
+      .locales-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2em;
+      }
+
+      /* #locales .locale + .locale::before {
+        content: '|';
+        font-weight: normal;
+        margin: 0 0.25em;
+      } */
+
+      .locale.selected {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>FriedPotato</h1>
+
+      <div class="locales-container">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="1.5em" height="1.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256">
+          <path fill="currentColor" d="m225.9 163.2l.3-1a103.7 103.7 0 0 0 0-68.4l-.3-1A104.4 104.4 0 0 0 128 24a104.2 104.2 0 0 0-97.9 68.8l-.3 1a103.7 103.7 0 0 0 0 68.4l.3 1A104.2 104.2 0 0 0 128 232a104.2 104.2 0 0 0 97.9-68.8ZM102.5 168h51a108.6 108.6 0 0 1-25.5 42.4a108.6 108.6 0 0 1-25.5-42.4Zm-4.2-16a126.4 126.4 0 0 1 0-48h59.4a127.6 127.6 0 0 1 2.3 24a126.8 126.8 0 0 1-2.3 24ZM40 128a90.3 90.3 0 0 1 3.3-24H82a145 145 0 0 0 0 48H43.3a90.3 90.3 0 0 1-3.3-24Zm113.5-40h-51A108.6 108.6 0 0 1 128 45.6A108.6 108.6 0 0 1 153.5 88Zm20.5 16h38.7a88.9 88.9 0 0 1 0 48H174a145 145 0 0 0 0-48Zm32.4-16h-36a128.7 128.7 0 0 0-24.1-46.1A88.6 88.6 0 0 1 206.4 88Zm-96.7-46.1A128.7 128.7 0 0 0 85.6 88h-36a88.6 88.6 0 0 1 60.1-46.1ZM49.6 168h36a128.7 128.7 0 0 0 24.1 46.1A88.3 88.3 0 0 1 49.6 168Zm96.7 46.1a128.7 128.7 0 0 0 24.1-46.1h36a88.3 88.3 0 0 1-60.1 46.1Z"></path>
+        </svg>
+
+        <div id="locales"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="1.5em" height="1.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256">
+          <path fill="currentColor" d="m225.9 163.2l.3-1a103.7 103.7 0 0 0 0-68.4l-.3-1A104.4 104.4 0 0 0 128 24a104.2 104.2 0 0 0-97.9 68.8l-.3 1a103.7 103.7 0 0 0 0 68.4l.3 1A104.2 104.2 0 0 0 128 232a104.2 104.2 0 0 0 97.9-68.8ZM102.5 168h51a108.6 108.6 0 0 1-25.5 42.4a108.6 108.6 0 0 1-25.5-42.4Zm-4.2-16a126.4 126.4 0 0 1 0-48h59.4a127.6 127.6 0 0 1 2.3 24a126.8 126.8 0 0 1-2.3 24ZM40 128a90.3 90.3 0 0 1 3.3-24H82a145 145 0 0 0 0 48H43.3a90.3 90.3 0 0 1-3.3-24Zm113.5-40h-51A108.6 108.6 0 0 1 128 45.6A108.6 108.6 0 0 1 153.5 88Zm20.5 16h38.7a88.9 88.9 0 0 1 0 48H174a145 145 0 0 0 0-48Zm32.4-16h-36a128.7 128.7 0 0 0-24.1-46.1A88.6 88.6 0 0 1 206.4 88Zm-96.7-46.1A128.7 128.7 0 0 0 85.6 88h-36a88.6 88.6 0 0 1 60.1-46.1ZM49.6 168h36a128.7 128.7 0 0 0 24.1 46.1A88.3 88.3 0 0 1 49.6 168Zm96.7 46.1a128.7 128.7 0 0 0 24.1-46.1h36a88.3 88.3 0 0 1-60.1 46.1Z"></path>
+        </svg>
+      </div>
+
+      <div id="not-found"></div>
+    </main>
+
+
+    <script defer>
+      const locales = {
+        ja: '日本語',
+        en: 'English',
+      }
+
+      i18next
+        .use(i18nextBrowserLanguageDetector)
+        .init({
+          fallbackLng: 'en',
+          resources: {
+            ja: {
+              translation: {
+                description: '譜面が見つかりませんでした！IDを確認してください。',
+              }
+            },
+            en: {
+              translation: {
+                description: 'Couldn\'t find the chart! Make sure you have the correct level ID.',
+              }
+            }
+          }
+        })
+
+      // Add locale switcher
+      Object.entries(locales).forEach(([key, value], ind) => {
+        const localeSwitcher = document.querySelector('#locales')
+        if (ind !== 0) {
+          const divider = document.createElement('span')
+          divider.classList.add('divider')
+          divider.innerText = '|'
+          divider.style = 'margin: 0 0.25em;'
+          localeSwitcher.appendChild(divider)
+        }
+        const span = document.createElement('span')
+        span.id = 'locale-' + key
+        span.lang = key
+        span.textContent = value
+        span.classList.add('locale')
+        span.addEventListener('click', () => {
+          i18next.changeLanguage(key)
+        })
+        localeSwitcher.appendChild(span)
+      })
+
+      function onLanguageChanged(lng) {
+        document.documentElement.setAttribute('lang', lng)
+
+        document.querySelectorAll('.locale').forEach(span => {
+          span.classList.remove('selected')
+          if (span.id === 'locale-' + lng) {
+            span.classList.add('selected')
+          }
+        })
+        document.querySelector('#not-found').textContent = i18next.t('description')
+      }
+
+      i18next.on('languageChanged', onLanguageChanged)
+
+      document.documentElement.lang = i18next.language
+      window.addEventListener('DOMContentLoaded', () => {
+        onLanguageChanged(i18next.language)
+      })
+    </script>
+  </body>
+</html>

@@ -334,17 +334,33 @@ SEARCH_OPTION = [
 ].freeze
 
 set :bind, "0.0.0.0"
-set :show_exceptions, development?
 set :public_folder, File.dirname(__FILE__) + "/public"
 if ENV["RACK_ENV"] == "production"
   set :port, ENV["PORT"]
+  set :environment, :production
 else
   set :port, $config.port
+  set :environment, :development
 end
+set :show_exceptions, development?
 $level_base = JSON.parse(File.read("base.json"), symbolize_names: true)
 
 get "/" do
-  send_file "./public/index.html"
+  erb :index
+end
+
+get %r{/levels/frpt-(.+)} do |name|
+  level_resp =
+    HTTP.get("https://servers-legacy.purplepalette.net/levels/#{name}")
+  next erb :level_404 if level_resp.status != 200
+  level = JSON.parse(level_resp.body, symbolize_names: true)[:item]
+  erb :level, locals: { level: level }
+end
+
+get "/jacket/:name" do
+  HTTP.get(
+    "https://servers-legacy.purplepalette.net/repository/#{params[:name]}/cover.png"
+  ).body
 end
 
 get "/info" do
@@ -392,6 +408,12 @@ end
 namespace "/sonolus" do
   get "/info" do
     resp = {
+      title: "FriedPotato",
+      banner: {
+        url: "/repo/banner.png",
+        hash: get_file_hash("./public/repo/banner.png"),
+        type: :ServerBanner
+      },
       levels: {
         items: JSON.parse(File.read("./info.json"), symbolize_names: true),
         search: {
