@@ -174,15 +174,16 @@ OUTSIDE_CHARACTERS =
       symbolize_names: true
     )
     .to_h { |c| [c[:id], c] }
+
+def get_file_hash(path)
+  $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
+end
 BANNER = {
   url: "/repo/banner.png",
   hash: get_file_hash("./public/repo/banner.png"),
   type: :ServerBanner
 }.freeze
 
-def get_file_hash(path)
-  $hash_cache[path] ||= Digest::SHA256.file(path).hexdigest
-end
 
 def format_artist(level, locale)
   if locale == "ja"
