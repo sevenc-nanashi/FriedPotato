@@ -560,17 +560,16 @@ namespace "/sonolus" do
                     ).gsub("+", "%20")}"
                 )
     if response.status >= 500
-      item = JSON.parse(File.read("./info_down.json"), symbolize_names: true),
+      item = JSON.parse(File.read("./info_down.json"), symbolize_names: true)
       if params["localization"] == "ja"
         item[:title] = "SweetPotatoが落ちています！"
         item[:artists] = "現在プレイできません。後でもう一度お試し下さい。"
       end
-      json({
+      next json({
         items: [item],
-        search: {},
-        pageCount: 1
+        search: {options: []},
+        pageCount: 0
       })
-      next
     end
     ppdata =
       JSON.parse(
