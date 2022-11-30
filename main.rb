@@ -551,15 +551,29 @@ namespace "/sonolus" do
   end
 
   get "/levels/list" do
+    response = HTTP
+                .get(
+                  "https://servers-legacy.purplepalette.net/levels/list?#{ +
+                    URI.encode_www_form(
+                      { keywords: params[:keywords], page: params[:page].to_i }
+                    ).gsub("+", "%20")}"
+                )
+    if response.status >= 500
+      item = JSON.parse(File.read("./info_down.json"), symbolize_names: true),
+      if params["localization"] == "ja"
+        item[:title] = "SweetPotatoが落ちています！"
+        item[:artists] = "現在プレイできません。後でもう一度お試し下さい。"
+      end
+      json({
+        items: [item],
+        search: {},
+        pageCount: 1
+      })
+      next
+    end
     ppdata =
       JSON.parse(
-        HTTP
-          .get(
-            "https://servers-legacy.purplepalette.net/levels/list?#{ +
-              URI.encode_www_form(
-                { keywords: params[:keywords], page: params[:page].to_i }
-              ).gsub("+", "%20")}"
-          )
+        response
           .body
           .to_s
           .gsub('"/', '"https://servers-legacy.purplepalette.net/'),

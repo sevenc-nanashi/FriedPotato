@@ -1,0 +1,41 @@
+[
+  {
+    "name": "frpt-system",
+    "version": 1,
+    "rating": 0,
+    "engine": {
+      "name": "frpt-message",
+      "version": 4,
+      "title": "-",
+      "subtitle": "（メッセージ用）",
+      "author": "名無し｡"
+    },
+    "useSkin": {
+      "useDefault": true
+    },
+    "useBackground": {
+      "useDefault": true
+    },
+    "useEffect": {
+      "useDefault": true
+    },
+    "useParticle": {
+      "useDefault": true
+    },
+    "title": "SweetPotato is Down!",
+    "artists": "SweetPotato is down so you can't play for now. Please try again later.",
+    "author": "by 名無し｡",
+    "cover": {
+      "type": "LevelCover",
+      "url": ""
+    },
+    "bgm": {
+      "type": "LevelBgm",
+      "url": "/repo/welcome.mp3"
+    },
+    "data": {
+      "type": "LevelData",
+      "url": "/repo/data.gz"
+    }
+  }
+]
