@@ -725,7 +725,7 @@ end
 get "/tests/:test_id/sonolus/levels/list" do |test_id|
   response = HTTP
               .get(
-                "https://servers-legacy.purplepalette.net/levels/list?#{ +
+                "https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?#{ +
                   URI.encode_www_form(
                     { keywords: params[:keywords], page: params[:page].to_i }
                   ).gsub("+", "%20")}"
