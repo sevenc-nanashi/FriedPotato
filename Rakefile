@@ -1,32 +1,27 @@
 # frozen_string_literal: true
 require "zlib"
 require "json"
-require "digest"
-require "http"
-require "stringio"
+require "yaml"
+require "zip"
 
-task :seconfig do
-  config = JSON.parse File.read("./raw_data/seconfig_additional.json"), symbolize_names: true
-  config_base = JSON.parse(
-    Zlib::GzipReader.wrap(
-      StringIO.new(
-        HTTP.get("https://servers.sonolus.com/pjsekai/repository/EffectData/b98f36f0370dd5b4cdaa67d594c203f07bbed055").body.to_s
-      )
-    ).read.gsub('"/', '"https://servers.sonolus.com/pjsekai/'),
-    symbolize_names: true,
-  )
+task :effect do
+  clips = YAML.load_file("effect/clips.yml")
+  effect_data = {clips: clips}
 
-  config.each do |c|
-    unless c[:clip][:hash]
-      c[:clip][:hash] = Digest::SHA1.file("./public#{c[:clip][:url]}").hexdigest
+  clips.each do |clip|
+    raise "Missing clip: #{clip}" unless File.exist?("effect/audio/#{clip["filename"]}")
+  end
+  Zlib::GzipWriter.open("public/repo/EffectData.gz") do |gz|
+    gz.write(JSON.dump(effect_data))
+  end
+
+  File.delete("public/repo/EffectAudio.zip") if File.exist?("public/repo/EffectAudio.zip")
+  Zip::File.open("public/repo/EffectAudio.zip", Zip::File::CREATE) do |zipfile|
+    Dir["effect/audio/*"].each do |file|
+      zipfile.add(file.sub("effect/audio/", ""), file)
     end
   end
-  config_base[:clips] += config
-  Zlib::GzipWriter.open("./public/repo/seconfig.gz") do |gz|
-    gz.write config_base.to_json
-  end
-  puts config_base
-  puts "seconfig.gz created"
+
 end
 
 task :lint do
