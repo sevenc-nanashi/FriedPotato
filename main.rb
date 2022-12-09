@@ -723,15 +723,28 @@ get %r{(?:/tests/[^/]+|/pjsekai|/official)?/generate/(.+)_(.+)} do |name, key|
 end
 
 get "/tests/:test_id/sonolus/levels/list" do |test_id|
+  response = HTTP
+              .get(
+                "https://servers-legacy.purplepalette.net/levels/list?#{ +
+                  URI.encode_www_form(
+                    { keywords: params[:keywords], page: params[:page].to_i }
+                  ).gsub("+", "%20")}"
+              )
+  if response.status >= 500
+    item = JSON.parse(File.read("./info_down.json"), symbolize_names: true)
+    if params["localization"] == "ja"
+      item[:title] = "SweetPotatoが落ちています！"
+      item[:artists] = "現在プレイできません。後でもう一度お試し下さい。"
+    end
+    next json({
+      items: [item],
+      search: {options: []},
+      pageCount: 0
+    })
+  end
   ppdata =
     JSON.parse(
-      HTTP
-        .get(
-          "https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?" +
-            URI.encode_www_form(
-              { keywords: params[:keywords], page: params[:page].to_i }
-            ).gsub("+", "%20")
-        )
+      response
         .body
         .to_s
         .gsub('"/', '"https://servers-legacy.purplepalette.net/'),
