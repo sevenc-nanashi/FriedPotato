@@ -184,7 +184,6 @@ BANNER = {
   type: :ServerBanner
 }.freeze
 
-
 def format_artist(level, locale)
   if locale == "ja"
     "作詞：#{level[:lyricist]}  作曲：#{level[:composer]}  編曲：#{level[:arranger]}"
@@ -201,11 +200,6 @@ def modify_level!(level, extra, server)
     level[:name] = level[:name].sub("pjsekai-", "frptp-level-")
 
     bgm_id = level[:bgm][:url].split("/")[-1].split(".")[0]
-    level[:data][:url] = "/shift/#{level[:name]}"
-    level[:bgm][:hash] = get_file_hash(
-      "./dist/bgm/#{bgm_id}.mp3"
-    ) if File.exist?("./dist/bgm/#{bgm_id}.mp3")
-    level[:bgm][:url] = "/bgm/#{bgm_id}"
   elsif level[:engine][:name] == "wbp-pjsekai"
     level[:name] = "frpt-#{level[:name]}"
 
@@ -325,6 +319,7 @@ SEARCH_OPTION = [
 
 set :bind, "0.0.0.0"
 set :public_folder, "#{File.dirname(__FILE__)}/public"
+
 if ENV["RACK_ENV"] == "production"
   set :port, ENV.fetch("PORT", nil)
   set :environment, :production
@@ -471,7 +466,7 @@ namespace "/sonolus" do
             URI.encode_www_form(
               { keywords: params[:keywords], page: params[:page] }
             )
-            }"
+          }"
         ).body,
         symbolize_names: true
       )
@@ -552,31 +547,28 @@ namespace "/sonolus" do
   end
 
   get "/levels/list" do
-    response = HTTP
-                .get(
-                  "https://servers-legacy.purplepalette.net/levels/list?#{ +
-                    URI.encode_www_form(
-                      { keywords: params[:keywords], page: params[:page].to_i }
-                    ).gsub("+", "%20")}"
-                )
+    response =
+      HTTP.get(
+        "https://servers-legacy.purplepalette.net/levels/list?#{
+          +URI.encode_www_form(
+            { keywords: params[:keywords], page: params[:page].to_i }
+          ).gsub("+", "%20")
+        }"
+      )
     if response.status >= 500
       item = JSON.parse(File.read("./info_down.json"), symbolize_names: true)
       if params["localization"] == "ja"
         item[:title] = "SweetPotatoが落ちています！"
         item[:artists] = "現在プレイできません。後でもう一度お試し下さい。"
       end
-      next json({
-        items: [item],
-        search: {options: []},
-        pageCount: 0
-      })
+      next json({ items: [item], search: { options: [] }, pageCount: 0 })
     end
     ppdata =
       JSON.parse(
-        response
-          .body
-          .to_s
-          .gsub('"/', '"https://servers-legacy.purplepalette.net/'),
+        response.body.to_s.gsub(
+          '"/',
+          '"https://servers-legacy.purplepalette.net/'
+        ),
         symbolize_names: true
       )
     if params[:keywords].nil? || params[:keywords].empty?
@@ -723,31 +715,28 @@ get %r{(?:/tests/[^/]+|/pjsekai|/official)?/generate/(.+)_(.+)} do |name, key|
 end
 
 get "/tests/:test_id/sonolus/levels/list" do |test_id|
-  response = HTTP
-              .get(
-                "https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?#{ +
-                  URI.encode_www_form(
-                    { keywords: params[:keywords], page: params[:page].to_i }
-                  ).gsub("+", "%20")}"
-              )
+  response =
+    HTTP.get(
+      "https://servers-legacy.purplepalette.net/tests/#{test_id}/levels/list?#{
+        +URI.encode_www_form(
+          { keywords: params[:keywords], page: params[:page].to_i }
+        ).gsub("+", "%20")
+      }"
+    )
   if response.status >= 500
     item = JSON.parse(File.read("./info_down.json"), symbolize_names: true)
     if params["localization"] == "ja"
       item[:title] = "SweetPotatoが落ちています！"
       item[:artists] = "現在プレイできません。後でもう一度お試し下さい。"
     end
-    next json({
-      items: [item],
-      search: {options: []},
-      pageCount: 0
-    })
+    next json({ items: [item], search: { options: [] }, pageCount: 0 })
   end
   ppdata =
     JSON.parse(
-      response
-        .body
-        .to_s
-        .gsub('"/', '"https://servers-legacy.purplepalette.net/'),
+      response.body.to_s.gsub(
+        '"/',
+        '"https://servers-legacy.purplepalette.net/'
+      ),
       symbolize_names: true
     )
   ppdata[:items].each { modify_level!(_1, false, :purplepalette) }
@@ -1148,8 +1137,6 @@ namespace %r{/(?:official|pjsekai)} do
     level_data[:entities].each do |entity|
       next if entity[:archetype] < 3
       val = entity[:data][:values]
-      val[0] -= 9
-      val[3] -= 9 if [9, 16].include?(entity[:archetype])
 
       if [3, 7, 10, 14].include? entity[:archetype]
         entity[:archetype] += 1
@@ -1160,21 +1147,6 @@ namespace %r{/(?:official|pjsekai)} do
       gz.write(JSON.dump(level_data))
     end
     send_file("./dist/modify/#{name}-f.gz")
-  end
-
-  get %r{/bgm/(.+)} do |name|
-    if File.exist?("./dist/bgm/#{name}.mp3")
-      next send_file("./dist/bgm/#{name}.mp3")
-    end
-    Open3.capture2e(
-      "ffmpeg",
-      "-i",
-      "https://storage.sekai.best/sekai-assets/music/long/#{name}_rip/#{name}.mp3",
-      "-ss",
-      "9",
-      "./dist/bgm/#{name}.mp3"
-    )
-    send_file("./dist/bgm/#{name}.mp3")
   end
 
   get %r{/generate/(.+?)(\.flick)?} do |name, flick|
@@ -1199,58 +1171,9 @@ namespace %r{/(?:official|pjsekai)} do
     send_file("./dist/bg/#{name}#{flick}.png")
   end
 
-  get %r{/shift/frptp-level-(.+?)} do |name|
-    if File.exist?("./dist/modify/#{name}.gz")
-      next send_file("./dist/modify/#{name}.gz")
-    end
-    raw =
-      HTTP.get(
-        "https://servers.sonolus.com/pjsekai/sonolus/levels/pjsekai-#{name}/data"
-      ).body
-    gzreader = Zlib::GzipReader.new(StringIO.new(raw.to_s))
-    level_data = JSON.parse(gzreader.read, symbolize_names: true)
-    level_data[:entities].each do |entity|
-      next if entity[:archetype] < 3
-      val = entity[:data][:values]
-      val[0] -= 9
-      val[3] -= 9 if [9, 16].include?(entity[:archetype])
-    end
-    Zlib::GzipWriter.open("./dist/modify/#{name}.gz") do |gz|
-      gz.write(JSON.dump(level_data))
-    end
-    send_file("./dist/modify/#{name}.gz")
+  get %r{/(.+)} do |path|
+    call env.merge("PATH_INFO" => "/#{path}")
   end
-
-  get %r{/(.*)} do |path|
-    redirect "/#{path}"
-  end
-end
-
-get "/effects/pjsekai.fixed" do
-  json(
-    {
-      description: "",
-      item: {
-        author: "Sonolus",
-        data: {
-          hash: get_file_hash("./public/repo/seconfig.gz"),
-          type: "EffectData",
-          url: "/repo/seconfig.gz"
-        },
-        name: "pjsekai.fixed",
-        subtitle: "Project Sekai: Colorful Stage!",
-        thumbnail: {
-          hash: "e5f439916eac9bbd316276e20aed999993653560",
-          type: "EffectThumbnail",
-          url:
-            "https://servers-legacy.purplepalette.net/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
-        },
-        title: "Project Sekai",
-        version: 2
-      },
-      recommended: []
-    }
-  )
 end
 
 get %r{(?:/tests/.+)?/convert/(.+)} do |name|
@@ -1363,7 +1286,7 @@ get "overrides/:path" do |path|
   send_file "./overrides/#{path}"
 end
 
-namespace %r{(?:/tests/([^/]+))?} do
+namespace %r{(?:/tests/([^/]+)|/pjsekai|/official)?} do
   get %r{/data-overrides/(.+)} do |_name, path|
     send_file "./dist/data-overrides/#{path}"
   end
