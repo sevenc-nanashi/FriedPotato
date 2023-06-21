@@ -2,21 +2,21 @@
   "author": "Sonolus",
   "data": {
     "hash": "f84c5dead70ad62a00217589a73a07e7421818a8",
-    "type": "ParticleData",
-    "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/ParticleData/f84c5dead70ad62a00217589a73a07e7421818a8"
+    "url": "https://cc.sevenc7c.com/sonolus/assets/particles/ParticleData",
+    "type": "ParticleData"
   },
   "name": "frpt-pjsekai",
   "subtitle": "From servers.sonolus.com/pjsekai",
   "description": "Nothing changed.",
   "texture": {
     "hash": "57b4bd504f814150dea87b41f39c2c7a63f29518",
-    "type": "ParticleTexture",
-    "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/ParticleTexture/57b4bd504f814150dea87b41f39c2c7a63f29518"
+    "url": "https://cc.sevenc7c.com/sonolus/assets/particles/ParticleTexture",
+    "type": "ParticleTexture"
   },
   "thumbnail": {
     "hash": "e5f439916eac9bbd316276e20aed999993653560",
-    "type": "ParticleThumbnail",
-    "url": "https://servers.sonolus.com/pjsekai/sonolus/repository/EffectThumbnail/e5f439916eac9bbd316276e20aed999993653560"
+    "url": "https://cc.sevenc7c.com/sonolus/assets/particles/ParticleThumbnail",
+    "type": "ParticleThumbnail"
   },
   "title": "PJSekai",
   "version": 1
