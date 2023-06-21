@@ -12,7 +12,7 @@ ADD http://www.random.org/strings/?num=10&len=8&digits=on&upperalpha=on&loweralp
 RUN git clone https://github.com/sevenc-nanashi/sonolus-pjsekai-engine-extended.git engine
 
 # -- Compile -----------------------------------------------------------------
-RUN cd engine && npm install && npm run build
+RUN cd engine && git checkout cc5ab1d && npm install && npm run build
 
 # == Server ==================================================================
 FROM ruby:3.1
